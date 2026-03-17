@@ -1,0 +1,106 @@
+// ============================================
+// 常用 Sass Mixins 集合
+// ============================================
+
+// ---------- 布局相关 ----------
+
+/**
+ * 清除浮动（Clearfix）
+ * 用于包含浮动元素的父容器，防止高度塌陷
+ * 用法：@include clearfix;
+ */
+@mixin clearfix {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+/**
+ * 绝对定位居中（Absolute Center）
+ * 利用 transform 实现未知宽高元素的垂直水平居中
+ * 用法：@include abs-center;
+ */
+@mixin abs-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/**
+ * Flex 居中（Flex Center）
+ * 使用 flex 布局快速实现垂直水平居中
+ * 用法：@include flex-center;
+ */
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ---------- 文本与排版 ----------
+
+/**
+ * 单行文本溢出省略号
+ * 超出容器宽度时显示省略号
+ * 用法：@include ellipsis;
+ */
+@mixin ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/**
+ * 多行文本溢出省略号
+ * 适用于 WebKit 内核浏览器（Chrome, Safari）
+ * @param {Number} $lines - 显示的行数（默认 2）
+ * 用法：@include multi-ellipsis(3);
+ */
+@mixin multi-ellipsis($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/**
+ * 隐藏文本（常用于图像替换，如 logo 使用背景图时隐藏文字）
+ * 用法：@include hide-text;
+ */
+@mixin hide-text {
+  font: 0/0 a;
+  color: transparent;
+  text-shadow: none;
+  background-color: transparent;
+  border: 0;
+}
+
+// ---------- 动画与过渡 ----------
+
+/**
+ * 平滑过渡效果简写
+ * @param {String} $property   - 过渡属性（默认 all）
+ * @param {Time} $duration     - 过渡时间（默认 0.3s）
+ * @param {String} $timing     - 时间函数（默认 ease）
+ * 用法：@include transition(opacity, 0.5s, ease-in);
+ */
+@mixin transition($property: all, $duration: 0.3s, $timing: ease) {
+  transition: $property $duration $timing;
+}
+
+/**
+ * 关键帧动画简写
+ * 需要提前定义 @keyframes，然后通过此 mixin 应用
+ * @param {String} $name       - 动画名称
+ * @param {Time} $duration     - 动画时长（默认 1s）
+ * @param {String} $timing     - 时间函数（默认 linear）
+ * @param {Number} $iteration  - 播放次数（默认 infinite）
+ * 用法：@include animation(fadeIn, 2s, ease-in-out, 1);
+ */
+@mixin animation($name, $duration: 1s, $timing: linear, $iteration: infinite) {
+  animation: $name $duration $timing $iteration;
+}

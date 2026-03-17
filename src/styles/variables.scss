@@ -1,0 +1,132 @@
+// ============================================
+// 设计变量文件 (Design Tokens)
+// 所有变量建议通过命名空间导入，避免全局污染
+// 配合 mixins.scss 中的 respond-to 使用效果最佳
+// ============================================
+
+// ---------- 颜色系统 ----------
+
+// 辅助色（根据项目需求可增减）
+$success-color: #67C23A; // 成功
+$warning-color: #E6A23C; // 警告
+$danger-color: #F56C6C; // 危险/错误
+$info-color: #909399; // 信息
+
+// 中性色（文本、背景、边框）
+$text-color-primary: #2c3e50; // 主要文字
+$text-color-regular: #606266; // 常规文字
+$text-color-secondary: #909399; // 次要文字
+$text-color-placeholder: #c0c4cc; // 占位文字
+
+$border-color-base: #dcdfe6; // 基础边框色
+$border-color-light: #e4e7ed; // 浅边框
+$border-color-lighter: #ebeef5; // 更浅边框
+$border-color-extra-light: #f2f6fc; // 极浅边框
+
+$background-color-base: #f5f7fa; // 基础背景色
+
+// ---------- 字体系统 ----------
+$font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+$font-family-monospace: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Fira Mono', 'Droid Sans Mono', 'Courier New', monospace;
+
+// 字重
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 600;
+
+// 字号（使用 rem 或 px，取决于项目）
+$font-size-base: 14px; // 基础字号
+$font-size-small: 12px; // 小号字
+$font-size-large: 16px; // 大号字
+$font-size-h1: 24px; // 标题 1
+$font-size-h2: 20px; // 标题 2
+$font-size-h3: 18px; // 标题 3
+$font-size-h4: 16px; // 标题 4
+$font-size-h5: 14px; // 标题 5
+
+// 行高
+$line-height-base: 1.5; // 基础行高
+$line-height-tight: 1.3; // 紧凑行高
+$line-height-loose: 1.8; // 宽松行高
+
+// ---------- 间距系统 ----------
+// 基于 4px 的网格系统，也可使用 8px 网格
+
+$spacing-unit: 4px; // 基础网格单位
+
+$spacing-1: $spacing-unit; // 4px
+$spacing-2: $spacing-unit * 2; // 8px
+$spacing-3: $spacing-unit * 3; // 12px
+$spacing-4: $spacing-unit * 4; // 16px
+$spacing-5: $spacing-unit * 5; // 20px
+$spacing-6: $spacing-unit * 6; // 24px
+$spacing-7: $spacing-unit * 7; // 28px
+$spacing-8: $spacing-unit * 8; // 32px
+$spacing-9: $spacing-unit * 9; // 36px
+$spacing-10: $spacing-unit * 10; // 40px
+$spacing-12: $spacing-unit * 12; // 48px
+$spacing-14: $spacing-unit * 14; // 56px
+$spacing-16: $spacing-unit * 16; // 64px
+$spacing-20: $spacing-unit * 20; // 80px
+$spacing-24: $spacing-unit * 24; // 96px
+
+// 常用别名
+$padding-base: $spacing-4; // 基础内边距 16px
+$margin-base: $spacing-4; // 基础外边距 16px
+$gap-base: $spacing-4; // 基础间距（flex/grid 间隔）
+
+// ---------- 响应式断点 ----------
+// 用于 mixins.scss 中的 respond-to mixin
+$breakpoints: (
+    'xs': 480px,
+    // 超小屏幕（手机）
+    'sm': 768px,
+    // 小屏幕（平板竖屏）
+    'md': 992px,
+    // 中等屏幕（平板横屏/小桌面）
+    'lg': 1200px,
+    // 大屏幕（桌面）
+    'xl': 1400px,
+    // 超大屏幕（宽屏）
+    'xxl': 1600px // 极宽屏
+    ) !default;
+
+// 也可单独定义变量方便使用
+$breakpoint-xs: 480px;
+$breakpoint-sm: 768px;
+$breakpoint-md: 992px;
+$breakpoint-lg: 1200px;
+$breakpoint-xl: 1400px;
+$breakpoint-xxl: 1600px;
+
+// ---------- 圆角 ----------
+$border-radius-none: 0;
+$border-radius-small: 2px; // 小圆角（按钮、标签）
+$border-radius-base: 4px; // 基础圆角（卡片、弹窗）
+$border-radius-large: 8px; // 大圆角（对话框）
+$border-radius-round: 20px; // 圆角胶囊（用于按钮、标签）
+$border-radius-circle: 50%; // 圆形
+
+// ---------- Z-Index 层级 ----------
+// 按照从低到高定义，避免层级混乱
+$z-index-dropdown: 1000; // 下拉菜单
+$z-index-sticky: 1020; // 粘性元素
+$z-index-fixed: 1030; // 固定元素（如导航栏）
+$z-index-modal-backdrop: 1040; // 模态框遮罩
+$z-index-modal: 1050; // 模态框
+$z-index-popup: 1060; // 弹出层（消息提示）
+$z-index-tooltip: 1070; // 文字提示
+
+// ---------- 其他常用变量 ----------
+$header-height: 60px; // 头部高度
+$sidebar-width: 240px; // 侧边栏宽度
+$sidebar-collapsed-width: 64px; // 侧边栏收起宽度
+
+// 表单控件尺寸
+$input-height-base: 32px;
+$input-height-large: 40px;
+$input-height-small: 24px;
+
+// 容器最大宽度（用于布局）
+$container-max-width: 1200px;

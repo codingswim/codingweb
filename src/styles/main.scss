@@ -1,0 +1,14 @@
+// 引入重置样式
+@use "@/styles/reset/_reset.scss" as *;
+
+// 引入主题样式
+@use "@/styles/themes/index.scss" as *;
+
+// 全局通用样式（使用 CSS 变量）
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease; // 过渡动画
+}

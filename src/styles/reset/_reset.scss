@@ -1,0 +1,59 @@
+// src/styles/reset/_reset.scss
+// 基础样式重置
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; // 统一盒模型
+}
+
+// 清除列表样式
+ul,
+ol {
+    list-style: none;
+}
+
+// 清除链接默认样式
+a {
+    text-decoration: none;
+    color: inherit; // 继承父级文本色，适配主题
+}
+
+// 清除按钮/输入框默认样式
+button,
+input,
+select,
+textarea {
+    font-family: inherit; // 继承全局字体
+    font-size: inherit;
+    color: inherit;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+// 图片自适应
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+// 表格边框合并
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+// 清除浮动
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+// 禁止选中文本（可选）
+.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+}
