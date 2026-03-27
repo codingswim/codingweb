@@ -2,8 +2,8 @@
 import { ref, onMounted } from "vue";
 import Title from "./Title.vue";
 import Map from "./map.vue";
-import SevenDayWeather from "./components/SevenDayWeather.vue";
-import RealTimeWeather from "./components/RealTimeWeather.vue";
+import Next7DaysWeather from "./components/Next7DaysWeather.vue";
+import Next7HoursWeather from "./components/Next7HoursWeather.vue";
 import Indices from "./components/Indices.vue";
 import Right1 from "./components/Right1.vue";
 import Right2 from "./components/Right2.vue";
@@ -47,8 +47,8 @@ window.onresize = () => {
     <div class="content">
       <!-- 左侧 3 个图表 -->
       <div class="left">
-        <SevenDayWeather :city="cityId" />
-        <RealTimeWeather :city="cityId" />
+        <Next7DaysWeather />
+        <Next7HoursWeather />
         <Indices :city="cityId" />
       </div>
 

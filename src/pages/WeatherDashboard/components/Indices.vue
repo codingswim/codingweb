@@ -33,10 +33,9 @@ const props = defineProps({
 const chartRef = ref<HTMLElement | null>(null);
 
 // 创建响应式数组，存储天气指数列表数据，类型为WeatherIndex接口数组
-const indices = ref<WeatherIndex[]>([]);
+// const indices = ref<WeatherIndex[]>([]);
 
 // 控制台打印指数数据，用于开发调试查看数据结构
-console.log("🚀 ~ indices:", indices);
 
 // 异步函数：从接口获取天气指数数据
 const fetchData = async () => {
@@ -45,7 +44,6 @@ const fetchData = async () => {
     const res: any = await getWeatherIndexDetail(props.city);
 
     // 控制台打印接口返回结果，开发调试用
-    console.log("🚀 ~ fetchData ~ res:", res);
 
     // 判断接口请求状态码，200表示成功
     if (res.code == 200) {

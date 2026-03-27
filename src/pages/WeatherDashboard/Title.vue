@@ -4,8 +4,7 @@
 <template>
   <div class="title_box">
     <div>
-      <h2>天气信息总览</h2>
-
+      <h2>郑州市 3D 气象可视化地图</h2>
     </div>
   </div>
 </template>

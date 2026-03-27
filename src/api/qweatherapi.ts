@@ -32,7 +32,7 @@ apiClient.interceptors.response.use(
     (response: AxiosResponse) => {
         // 统一处理响应数据
         if (response.status === 200) {
-            return response.data;
+            return response;
         }
         return response;
     },

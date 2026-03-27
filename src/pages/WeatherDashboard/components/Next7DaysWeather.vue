@@ -1,62 +1,38 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { getSevenDayWeather } from "@/api/qweatherapi";
-import ChartBox from "../ChartBox/index.vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import * as echarts from "echarts";
+import type { ECharts } from "echarts";
+import ChartBox from "../ChartBox/index.vue";
+import { useWeatherDashboardStore } from "@/stores/weatherDashboard";
 
-// 气象数据接口
-interface WeatherData {
-  fxDate: string;
-  tempMax: number;
-  tempMin: number;
-}
+const store = useWeatherDashboardStore();
+const next7DaysWeather = computed(() => store.next7DaysWeather);
+const chartRef = ref<HTMLElement | null>(null);
 
-// 组件属性
-const props = defineProps({
-  city: {
-    type: String,
-    required: true,
-  },
-});
-
-const chartRef = ref(null);
-const weatherData = ref([
-  { date: "01-01", high: 18, low: 8 },
-  { date: "01-02", high: 20, low: 10 },
-  { date: "01-03", high: 22, low: 12 },
-  { date: "01-04", high: 25, low: 14 },
-  { date: "01-05", high: 23, low: 13 },
-  { date: "01-06", high: 19, low: 9 },
-  { date: "01-07", high: 17, low: 7 },
-]);
-
-const fetchData = async () => {
-  const res: any = await getSevenDayWeather(props.city);
-  if (res.code == 200) {
-    const daily = res.daily.map((item: WeatherData) => ({
-      date: item.fxDate.slice(5, 10),
-      high: item.tempMax,
-      low: item.tempMin,
-    }));
-    weatherData.value = daily;
-  }
-  initChart();
-};
-
-onMounted(() => {
-  fetchData();
-});
+let myChart: ECharts | null = null;
 
 const initChart = () => {
-  // 1. 创建 echarts 实例
-  const myChart = echarts.init(chartRef.value);
+  if (!chartRef.value) return;
+  if (myChart) return; // 防止重复实例化（核心优化）
 
-  // 2. 处理数据
-  const dates = weatherData.value.map((item) => item.date);
-  const highTemp = weatherData.value.map((item) => item.high);
-  const lowTemp = weatherData.value.map((item) => item.low);
+  myChart = echarts.init(chartRef.value);
+  myChart.showLoading({
+    text: "加载数据中...",
+    color: "#4dabf7",
+    maskColor: "rgba(255,255,255,0)",
+  });
+};
 
-  // 3. 配置项（美观版）
+const updateChart = () => {
+  if (!myChart || next7DaysWeather.value.length === 0) {
+    myChart?.hideLoading();
+    return;
+  }
+
+  const dates = next7DaysWeather.value.map((item) => item.date);
+  const highTemp = next7DaysWeather.value.map((item) => item.high);
+  const lowTemp = next7DaysWeather.value.map((item) => item.low);
+
   const option = {
     tooltip: {
       trigger: "axis",
@@ -88,7 +64,6 @@ const initChart = () => {
       splitLine: { lineStyle: { color: "#f0f0f0" } },
     },
     series: [
-      // 最高温度线
       {
         name: "最高温度",
         type: "line",
@@ -105,7 +80,6 @@ const initChart = () => {
           ]),
         },
       },
-      // 最低温度线
       {
         name: "最低温度",
         type: "line",
@@ -125,19 +99,31 @@ const initChart = () => {
     ],
   };
 
-  // 4. 渲染
-  myChart.setOption(option);
-
-  // 自适应窗口大小
-  window.addEventListener("resize", () => {
-    myChart.resize();
-  });
+  myChart.setOption(option, true);
+  myChart.hideLoading();
 };
+
+watch(
+  () => next7DaysWeather.value,
+  (newVal) => {
+    if (newVal.length) updateChart();
+  },
+  { immediate: true, deep: true }
+);
+
+onMounted(() => {
+  initChart();
+});
+
+onUnmounted(() => {
+  myChart?.dispose();
+  myChart = null;
+});
 </script>
 
 <template>
-  <ChartBox title="近7日气温趋势">
-    <div ref="chartRef" class="chart"></div>
+  <ChartBox :title="`${store.cityName} 未来7日气温趋势`">
+    <div ref="chartRef" class="chart" />
   </ChartBox>
 </template>
 
