@@ -25,5 +25,10 @@ export default {
     deleteFailed: '刪除失敗',
     confirmDelete: '確認刪除嗎？',
     confirm: '確認',
+  },
+
+  // 数据看板相关
+  dashboard: {
+    title: '天气看板',
   }
 };

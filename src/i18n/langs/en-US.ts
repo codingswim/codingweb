@@ -25,5 +25,9 @@ export default {
     deleteFailed: 'Delete Failed',
     confirmDelete: 'Confirm Delete?',
     confirm: 'Confirm',
+  },
+  // 数据看板相关
+  dashboard: {
+    title: 'Weather Dashboard',
   }
 };

@@ -4,6 +4,7 @@
       <Title />
     </div>
     <div class="header_right">
+      <router-link to="/weather-dashboard">{{ $t("dashboard.title") }}</router-link>
       <ThemeSwitch />
       <LangSwitch />
     </div>
