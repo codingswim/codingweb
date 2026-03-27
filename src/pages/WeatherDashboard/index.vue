@@ -2,7 +2,6 @@
 import { ref, onMounted } from "vue";
 import Title from "./Title.vue";
 import Map from "./map.vue";
-import ChartBox from "./ChartBox/index.vue";
 import SevenDayWeather from "./components/SevenDayWeather.vue";
 import RealTimeWeather from "./components/RealTimeWeather.vue";
 import Indices from "./components/Indices.vue";

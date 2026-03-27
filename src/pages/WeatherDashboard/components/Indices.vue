@@ -59,13 +59,13 @@ const fetchData = async () => {
 };
 
 // 仪表盘图表使用的模拟数据（固定写死，可替换为接口真实数据）
-const weatherData = [
-  { name: "穿衣指数", value: 25 }, // 指数名称 + 指数值（0~100范围）
-  // 以下为注释掉的其他指数模拟数据
-  // { name: "运动指数", value: 45 },
-  // { name: "洗车指数", value: 78 },
-  // { name: "防晒指数", value: 90 },
-];
+// const weatherData = [
+//   { name: "穿衣指数", value: 25 }, // 指数名称 + 指数值（0~100范围）
+//   // 以下为注释掉的其他指数模拟数据
+//   // { name: "运动指数", value: 45 },
+//   // { name: "洗车指数", value: 78 },
+//   // { name: "防晒指数", value: 90 },
+// ];
 
 // 初始化ECharts仪表盘图表核心函数
 const initChart = () => {

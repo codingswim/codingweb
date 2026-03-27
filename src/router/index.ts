@@ -3,7 +3,6 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
 // 2. 引入你要跳转的页面
 import Home from '@/pages/Home/index.vue'
-// import DataDashboard from '@/pages/DataDashboard/index.vue'
 import WeatherDashboard from '@/pages/WeatherDashboard/index.vue'
 
 // 3. 配置路由规则
@@ -28,16 +27,7 @@ const routes: RouteRecordRaw[] = [
             keepAlive: false
         }
     },
-    // {
-    //     path: '/data-dashboard',
-    //     name: 'DataDashboard',
-    //     component: DataDashboard,
-    //     meta: {
-    //         title: '数据看板',
-    //         requiresAuth: false,
-    //         keepAlive: false
-    //     }
-    // },
+
     // 路由重定向示例
     {
         path: '/dashboard',
@@ -55,7 +45,7 @@ const router = createRouter({
     history: createWebHistory(), // 路由模式（推荐）
     routes,
     // 滚动行为配置
-    scrollBehavior(to, from, savedPosition) {
+    scrollBehavior(_to, _from, savedPosition) {
         if (savedPosition) {
             return savedPosition
         } else {
@@ -65,7 +55,7 @@ const router = createRouter({
 })
 
 // 5. 路由守卫 - 全局前置守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
     // 设置页面标题
     if (to.meta.title) {
         document.title = to.meta.title as string
