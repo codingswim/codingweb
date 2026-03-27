@@ -58,6 +58,9 @@ function updateMapStyle() {
   });
 
   myChart.setOption({
+    title:{
+      text: store.cityName,
+    },
     series: [{ id: "zhengzhouMap", data: data }],
   });
 }
@@ -137,6 +140,6 @@ onUnmounted(() => {
 <style scoped>
 .map-3d-container {
   width: 100%;
-  height: 100vh;
+  height: 100%;
 }
 </style>
