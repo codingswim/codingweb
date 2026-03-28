@@ -12,13 +12,13 @@ import ChartBox from "../ChartBox/index.vue";
 import * as echarts from "echarts";
 
 // 定义天气指数数据类型接口（TS类型约束），规范接口返回数据格式
-interface WeatherIndex {
-  name: string; // 指数名称，如穿衣指数、运动指数
-  category: string; // 指数分类
-  level: string; // 指数等级
-  text: string; // 指数描述文本
-  type: string; // 指数类型标识
-}
+// interface WeatherIndex {
+//   name: string; // 指数名称，如穿衣指数、运动指数
+//   category: string; // 指数分类
+//   level: string; // 指数等级
+//   text: string; // 指数描述文本
+//   type: string; // 指数类型标识
+// }
 
 // 定义组件接收的父组件参数（props）
 const props = defineProps({
