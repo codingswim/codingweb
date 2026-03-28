@@ -76,4 +76,8 @@ export default {
       library: '圖書館',
     },
   },
+
+  wyyMusic: {
+    navTitle: 'Music',
+  },
 };

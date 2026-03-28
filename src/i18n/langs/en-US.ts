@@ -75,4 +75,8 @@ export default {
       library: 'Library',
     },
   },
+
+  wyyMusic: {
+    navTitle: 'Music',
+  },
 };

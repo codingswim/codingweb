@@ -2,16 +2,17 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
 // 2. 引入你要跳转的页面
-import Home from '@/pages/Home/index.vue'
-import WeatherDashboard from '@/pages/WeatherDashboard/index.vue'
-import WhiteNoise from '@/pages/WhiteNoise/index.vue'
+import home from '@/pages/home/index.vue'
+import weatherDashboard from '@/pages/weather-dashboard/index.vue'
+import whiteNoise from '@/pages/white-noise/index.vue'
+import wyyMusic from '@/pages/wyy-music/index.vue'
 
 // 3. 配置路由规则
 const routes: RouteRecordRaw[] = [
     {
         path: '/',          // 地址栏路径
-        name: 'Home',       // 路由名字
-        component: Home,    // 对应页面组件
+        name: 'home',       // 路由名字
+        component: home,    // 对应页面组件
         meta: {
             title: '首页',   // 页面标题
             requiresAuth: false, // 是否需要登录
@@ -20,8 +21,8 @@ const routes: RouteRecordRaw[] = [
     },
     {
         path: '/weather-dashboard',
-        name: 'WeatherDashboard',
-        component: WeatherDashboard,
+        name: 'weatherDashboard',
+        component: weatherDashboard,
         meta: {
             title: '天气看板',
             requiresAuth: false,
@@ -30,10 +31,20 @@ const routes: RouteRecordRaw[] = [
     },
     {
         path: '/white-noise',
-        name: 'WhiteNoise',
-        component: WhiteNoise,
+        name: 'whiteNoise',
+        component: whiteNoise,
         meta: {
             title: '白噪音助眠',
+            requiresAuth: false,
+            keepAlive: false
+        }
+    },
+    {
+        path: '/wyy-music',
+        name: 'wyyMusic',
+        component: wyyMusic,
+        meta: {
+            title: 'Music',
             requiresAuth: false,
             keepAlive: false
         }
