@@ -4,6 +4,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 // 2. 引入你要跳转的页面
 import Home from '@/pages/Home/index.vue'
 import WeatherDashboard from '@/pages/WeatherDashboard/index.vue'
+import WhiteNoise from '@/pages/WhiteNoise/index.vue'
 
 // 3. 配置路由规则
 const routes: RouteRecordRaw[] = [
@@ -23,6 +24,16 @@ const routes: RouteRecordRaw[] = [
         component: WeatherDashboard,
         meta: {
             title: '天气看板',
+            requiresAuth: false,
+            keepAlive: false
+        }
+    },
+    {
+        path: '/white-noise',
+        name: 'WhiteNoise',
+        component: WhiteNoise,
+        meta: {
+            title: '白噪音助眠',
             requiresAuth: false,
             keepAlive: false
         }

@@ -1,0 +1,43 @@
+import type { Component } from 'vue'
+import {
+  Drizzling,
+  Lightning,
+  WindPower,
+  House,
+  Sunny,
+  Guide,
+  Ship,
+  Orange,
+  Moon,
+  Switch,
+  Van,
+  Bowl,
+  Microphone,
+  Reading,
+  Sunrise,
+  FirstAidKit,
+  Monitor,
+  Collection,
+} from '@element-plus/icons-vue'
+import type { SoundIconName } from '@/constants/whiteNoiseSounds'
+
+export const WHITE_NOISE_ICON_MAP: Record<SoundIconName, Component> = {
+  Drizzling,
+  Lightning,
+  WindPower,
+  House,
+  Sunny,
+  Guide,
+  Ship,
+  Orange,
+  Moon,
+  Switch,
+  Van,
+  Bowl,
+  Microphone,
+  Reading,
+  Sunrise,
+  FirstAidKit,
+  Monitor,
+  Collection,
+}

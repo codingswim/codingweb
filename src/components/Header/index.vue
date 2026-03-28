@@ -4,7 +4,12 @@
       <Title />
     </div>
     <div class="header_right">
-      <router-link to="/weather-dashboard">{{ $t("dashboard.title") }}</router-link>
+      <router-link class="header-nav-link" to="/weather-dashboard">{{
+        $t("dashboard.title")
+      }}</router-link>
+      <router-link class="header-nav-link" to="/white-noise">{{
+        $t("whiteNoise.navTitle")
+      }}</router-link>
       <ThemeSwitch />
       <LangSwitch />
     </div>
@@ -49,6 +54,26 @@ import LangSwitch from "./LangSwitch/index.vue";
   align-items: center;
   justify-content: flex-end;
   gap: 16px;
+}
+
+.header-nav-link {
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: clamp(13px, 1.5vw, 15px);
+  white-space: nowrap;
+  opacity: 0.92;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  &.router-link-active {
+    font-weight: 600;
+    color: var(--primary-color, #409eff);
+  }
 }
 
 /* 媒体查询 - 移动端优化 */
