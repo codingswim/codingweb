@@ -1,241 +1,206 @@
 <template>
   <div class="visualizer-container">
-    <!-- 左侧垂直可视化 -->
     <canvas
-      ref="leftCanvasRef"
-      class="wn-canvas wn-canvas-left"
+      ref="canvasRef"
+      class="spectrum-canvas"
       aria-hidden="true"
-      :style="{ '--wn-viz-muted': vizMuted, '--wn-accent': vizAccent }"
-    />
-    
-    <!-- 右侧垂直可视化 -->
-    <canvas
-      ref="rightCanvasRef"
-      class="wn-canvas wn-canvas-right"
-      aria-hidden="true"
-      :style="{ '--wn-viz-muted': vizMuted, '--wn-accent': vizAccent }"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted, nextTick } from 'vue'
+import { ref, watch, onUnmounted, nextTick } from "vue";
 
 const props = defineProps<{
-  analyser: AnalyserNode | null
-  isPlaying: boolean
-}>()
+  analyser: AnalyserNode | null;
+  isPlaying: boolean;
+}>();
 
-const leftCanvasRef = ref<HTMLCanvasElement | null>(null)
-const rightCanvasRef = ref<HTMLCanvasElement | null>(null)
-const vizMuted = ref('rgba(0,0,0,0.06)')
-const vizAccent = ref('#FEE88F')
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+let rafId = 0;
+let lastData: Uint8Array | null = null;
+let smoothedData: Uint8Array | null = null; // 用于平滑动画
 
-let rafId = 0
+// 平滑系数 (0~1, 越小越平滑)
+const SMOOTHING = 0.6;
 
-function readCssVars() {
-  const root = document.documentElement
-  const muted =
-    getComputedStyle(root).getPropertyValue('--wn-viz-muted').trim() ||
-    'rgba(0,0,0,0.06)'
-  const accent =
-    getComputedStyle(root).getPropertyValue('--wn-accent').trim() || '#FEE88F'
-  vizMuted.value = muted
-  vizAccent.value = accent
+function resizeCanvas() {
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+  const container = canvas.parentElement;
+  const width = container ? container.clientWidth : window.innerWidth;
+  const height = 80; // 固定高度，可根据需要调整
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.floor(width * dpr));
+  canvas.height = Math.floor(height * dpr);
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
 }
 
-function resize(canvas: HTMLCanvasElement) {
-  if (!canvas) return
-  const w = 120 // 垂直可视化的宽度
-  const h = window.innerHeight // 高度为窗口高度
-  const dpr = window.devicePixelRatio || 1
-  canvas.width = Math.max(1, Math.floor(w * dpr))
-  canvas.height = Math.floor(h * dpr)
-  canvas.style.width = `${w}px`
-  canvas.style.height = `${h}px`
-}
+function drawIdle() {
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
 
-function drawIdleStatic(canvas: HTMLCanvasElement) {
-  if (!canvas) return
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
-  resize(canvas)
-  readCssVars()
-  const w = canvas.width
-  const h = canvas.height
-  ctx.setTransform(1, 0, 0, 1, 0, 0)
-  ctx.clearRect(0, 0, w, h)
-  ctx.fillStyle = vizMuted.value
-  const mid = w / 2
-  const barH = 3 * (window.devicePixelRatio || 1)
-  const gap = 4 * (window.devicePixelRatio || 1)
-  const n = Math.floor(h / (barH + gap))
-  for (let i = 0; i < n; i++) {
-    const y = i * (barH + gap) + gap
-    const bw = w * 0.12
-    ctx.fillRect(mid - bw / 2, y, bw, barH)
+  resizeCanvas();
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // 绘制灰色静态度量条（表示无音频时）
+  const barCount = 60;
+  const barWidth = (w / barCount) * 0.7;
+  const spacing = (w / barCount) * 0.3;
+  for (let i = 0; i < barCount; i++) {
+    const x = i * (barWidth + spacing);
+    const barHeight = 3; // 很矮的静态度量
+    const y = (h - barHeight) / 2;
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    ctx.fillRect(x, y, barWidth, barHeight);
   }
 }
 
-function fillRoundRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number
-) {
-  const rr = Math.min(r, w / 2, h / 2)
-  if (typeof ctx.roundRect === 'function') {
-    ctx.beginPath()
-    ctx.roundRect(x, y, w, h, rr)
-    ctx.fill()
-  } else {
-    ctx.fillRect(x, y, w, h)
-  }
-}
-
-function drawVisualization(canvas: HTMLCanvasElement) {
-  const analyser = props.analyser
+function drawSpectrum() {
+  const canvas = canvasRef.value;
+  const analyser = props.analyser;
   if (!canvas || !analyser || !props.isPlaying) {
-    drawIdleStatic(canvas)
-    return
+    drawIdle();
+    return;
   }
 
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
 
-  resize(canvas)
-  readCssVars()
-  const w = canvas.width
-  const h = canvas.height
-  const bufferLength = analyser.frequencyBinCount
-  const data = new Uint8Array(bufferLength)
-  analyser.getByteFrequencyData(data)
+  resizeCanvas();
+  const w = canvas.width;
+  const h = canvas.height;
 
-  ctx.setTransform(1, 0, 0, 1, 0, 0)
-  const grad = ctx.createLinearGradient(0, 0, 0, h)
-  grad.addColorStop(0, hexWithAlpha(vizAccent.value, 0.12))
-  grad.addColorStop(1, hexWithAlpha(vizAccent.value, 0.55))
-  ctx.fillStyle = grad
-  ctx.clearRect(0, 0, w, h)
+  const bufferLength = analyser.frequencyBinCount;
+  const data = new Uint8Array(bufferLength);
+  analyser.getByteFrequencyData(data);
 
-  const bars = 64
-  const step = Math.max(1, Math.floor(bufferLength / bars))
-  const barH = Math.max(2, (h / bars) * 0.55)
-  const gap = (h - barH * bars) / (bars + 1)
+  // 平滑处理（使动画更柔和）
+  if (!smoothedData || smoothedData.length !== bufferLength) {
+    smoothedData = new Uint8Array(bufferLength);
+    lastData = new Uint8Array(bufferLength);
+  }
+  for (let i = 0; i < bufferLength; i++) {
+    if (lastData) {
+      smoothedData[i] = Math.max(
+        data[i],
+        Math.floor(lastData[i] * SMOOTHING + data[i] * (1 - SMOOTHING))
+      );
+    } else {
+      smoothedData[i] = data[i];
+    }
+  }
+  // 更新上次数据
+  if (lastData) {
+    lastData.set(smoothedData);
+  }
+
+  // 取前 2/3 频段（人耳敏感范围）
+  const bars = 80;
+  const step = Math.max(1, Math.floor(bufferLength * 0.7 / bars));
+  const barWidth = (w / bars) * 0.8;
+  const spacing = (w / bars) * 0.2;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // 渐变画笔
+  const gradient = ctx.createLinearGradient(0, 0, 0, h);
+  gradient.addColorStop(0, "#FEE88F");      // 亮金色
+  gradient.addColorStop(0.6, "#FFB347");    // 橙色
+  gradient.addColorStop(1, "#FF8C42");      // 橙红
 
   for (let i = 0; i < bars; i++) {
-    let sum = 0
+    let sum = 0;
     for (let j = 0; j < step; j++) {
-      sum += data[i * step + j] ?? 0
+      const idx = i * step + j;
+      if (idx < smoothedData.length) sum += smoothedData[idx];
     }
-    const avg = sum / step
-    const bw = Math.max(4, (avg / 255) * w * 0.92)
-    const y = gap + i * (barH + gap)
-    const x = (w - bw) / 2
-    fillRoundRect(ctx, x, y, bw, barH, barH / 2)
+    const avg = sum / step;
+    // 映射高度（0~255 -> 2~h*0.8）
+    const barHeight = Math.max(2, (avg / 255) * h * 0.8);
+    const x = i * (barWidth + spacing);
+    const y = h - barHeight;
+
+    // 圆角矩形
+    ctx.beginPath();
+    ctx.roundRect(x, y, barWidth, barHeight, 4);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    // 添加微光晕
+    ctx.shadowBlur = 4;
+    ctx.shadowColor = "rgba(255, 180, 70, 0.5)";
+    ctx.fill();
+    ctx.shadowBlur = 0;
   }
 }
 
 function tick() {
   if (!props.isPlaying || !props.analyser) {
-    cancelAnimationFrame(rafId)
-    drawIdleStatic(leftCanvasRef.value!)
-    drawIdleStatic(rightCanvasRef.value!)
-    return
+    cancelAnimationFrame(rafId);
+    drawIdle();
+    return;
   }
 
-  drawVisualization(leftCanvasRef.value!)
-  drawVisualization(rightCanvasRef.value!)
-
-  rafId = requestAnimationFrame(tick)
-}
-
-function hexWithAlpha(hex: string, alpha: number): string {
-  const m = hex.trim().match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i)
-  if (!m) return `rgba(109,90,205,${alpha})`
-  const r = parseInt(m[1], 16)
-  const g = parseInt(m[2], 16)
-  const b = parseInt(m[3], 16)
-  return `rgba(${r},${g},${b},${alpha})`
+  drawSpectrum();
+  rafId = requestAnimationFrame(tick);
 }
 
 function startOrStop() {
-  cancelAnimationFrame(rafId)
+  cancelAnimationFrame(rafId);
   if (props.isPlaying && props.analyser) {
-    tick()
+    tick();
   } else {
-    drawIdleStatic(leftCanvasRef.value!)
-    drawIdleStatic(rightCanvasRef.value!)
+    drawIdle();
   }
 }
 
 watch(
   () => [props.analyser, props.isPlaying] as const,
   () => {
-    nextTick(() => startOrStop())
+    nextTick(() => startOrStop());
   },
   { immediate: true }
-)
+);
 
-let ro: ResizeObserver | null = null
-
-watch(leftCanvasRef, (el) => {
-  ro?.disconnect()
-  if (el) {
-    ro = new ResizeObserver(() => {
-      startOrStop()
-    })
-    ro.observe(el)
+// 窗口大小改变时重新计算尺寸
+let resizeObserver: ResizeObserver | null = null;
+watch(canvasRef, (el) => {
+  resizeObserver?.disconnect();
+  if (el && el.parentElement) {
+    resizeObserver = new ResizeObserver(() => startOrStop());
+    resizeObserver.observe(el.parentElement);
   }
-})
+});
 
 onUnmounted(() => {
-  cancelAnimationFrame(rafId)
-  ro?.disconnect()
-})
+  cancelAnimationFrame(rafId);
+  resizeObserver?.disconnect();
+});
 </script>
 
 <style scoped lang="scss">
 .visualizer-container {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   bottom: 0;
-  pointer-events: none;
-  z-index: 9999;
-}
-
-.wn-canvas {
-  display: block;
-  border-radius: 0;
-  // background: linear-gradient(90deg, rgba(124, 111, 214, 0.06), transparent);
-  position: fixed;
-  top: 0;
-  height: 100vh;
-  width: 120px;
-}
-
-.wn-canvas-left {
   left: 0;
-}
-
-.wn-canvas-right {
   right: 0;
+  pointer-events: none;
+  z-index: -100;
+  height: 80px; /* 与 canvas 高度一致 */
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.2));
+  backdrop-filter: blur(4px);
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .wn-canvas {
-    width: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .wn-canvas {
-    width: 8px;
-  }
+.spectrum-canvas {
+  display: block;
+  width: 100%;
+  height: 80px;
+  margin: 0 auto;
 }
 </style>
