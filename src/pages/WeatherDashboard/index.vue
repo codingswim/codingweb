@@ -25,30 +25,16 @@ window.onresize = () => {
   screen.value.style.transform = `scale(${getScale()}) translate(-50%,-50%)`;
 };
 
-/*
-1. 实时天气
-
-2. 近七日天气
-
-3. 天气指数
-
-4. 空气质量
-
-5. 
-
-
-*/
 </script>
 <template>
   <div class="container" ref="screen">
     <Title />
-    <!-- 内容区域  -->
 
     <div class="content">
       <!-- 左侧 3 个图表 -->
       <div class="left">
-        <Next7DaysWeather />
         <Next7HoursWeather />
+        <Next7DaysWeather />
         <Indices :city="cityId" />
       </div>
 

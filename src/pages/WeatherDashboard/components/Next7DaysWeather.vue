@@ -122,7 +122,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <ChartBox :title="`${store.cityName} 未来7日气温趋势`">
+  <ChartBox title="未来7日气温趋势">
     <div ref="chartRef" class="chart" />
   </ChartBox>
 </template>

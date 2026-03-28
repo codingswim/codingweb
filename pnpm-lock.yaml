@@ -35,6 +35,9 @@ importers:
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
+      qweather-icons:
+        specifier: ^1.8.0
+        version: 1.8.0
       sortablejs:
         specifier: ^1.15.7
         version: 1.15.7
@@ -854,6 +857,10 @@ packages:
 
   quansync@0.2.11:
     resolution: {integrity: sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==}
+
+  qweather-icons@1.8.0:
+    resolution: {integrity: sha512-Ti7KGrWXSV7e5HMpjPhDYua8hwC3t0nScNOSQ3kLPehsOja5cioZw8bcKi7jeAGBlVLrgAkLla5xVEYlH1s5Jw==}
+    engines: {node: '>=10'}
 
   readdirp@4.1.2:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
@@ -1770,6 +1777,8 @@ snapshots:
   proxy-from-env@1.1.0: {}
 
   quansync@0.2.11: {}
+
+  qweather-icons@1.8.0: {}
 
   readdirp@4.1.2: {}
 

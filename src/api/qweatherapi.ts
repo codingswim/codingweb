@@ -87,3 +87,8 @@ export const getHourlyWeather = (city: string) => {
 export const getWeatherIndexDetail = (city: string) => {
     return apiClient.get('/v7/indices/1d?type=0&location=' + city);
 }
+
+// 获取天气指数
+export const getWeatherNow = (city: string) => {
+    return apiClient.get('/v7/weather/now?location=' + city);
+}

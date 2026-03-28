@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getSevenDayWeather, getHourlyWeather } from '@/api/qweatherapi'
+import { getSevenDayWeather, getHourlyWeather, getWeatherNow } from '@/api/qweatherapi'
 import { ref, watchEffect } from 'vue'
 
 // 区域名称到城市代码的映射（示例数据，需要根据实际情况修改）
@@ -50,6 +50,16 @@ interface Next7HoursWeatherData {
     windDir: string;
 }
 
+// 实时天气数据
+interface WeatherNowData {
+    temp: string; // 温度，单位：摄氏度
+    icon: string; // 天气图标
+    text: string; // 天气描述
+    windDir: string; // 风向
+    windScale: string; // 风力
+    humidity: string; // 湿度
+}
+
 
 export const useWeatherDashboardStore = defineStore('weatherDashboard', () => {
     const loading = ref(false)
@@ -58,6 +68,16 @@ export const useWeatherDashboardStore = defineStore('weatherDashboard', () => {
     const setCityName = (name: string) => {
         cityName.value = name;
     }
+
+    // 实时天气数据
+    const weatherNow = ref<WeatherNowData>({
+        temp: "",
+        icon: "",
+        text: "",
+        windDir: "",
+        windScale: "",
+        humidity: "",
+    })
 
     // 未来7天天气数据
     const next7DaysWeather = ref<Next7DaysWeatherData[]>([])
@@ -97,10 +117,24 @@ export const useWeatherDashboardStore = defineStore('weatherDashboard', () => {
         }
     }
 
+    // 获取实时天气数据
+    const fetchWeatherNow = async (areaCode: string) => {
+        const res = await getWeatherNow(areaCode);
+        if (res.status == 200) {
+            weatherNow.value = res.data.now;
+        }
+    }
+
     const handleFetch = async (areaCode: string) => {
         loading.value = true;
         try {
-            await Promise.all([fetchNext7DaysWeather(areaCode), fetchNext7HoursWeather(areaCode)]);
+            await Promise.all(
+                [
+                    fetchNext7DaysWeather(areaCode),
+                    fetchNext7HoursWeather(areaCode),
+                    fetchWeatherNow(areaCode)
+                ]
+            );
         } finally {
             loading.value = false;
         }
@@ -114,7 +148,7 @@ export const useWeatherDashboardStore = defineStore('weatherDashboard', () => {
         loading,
         cityName,
         setCityName,
-
+        weatherNow,
         next7DaysWeather,
         fetchNext7DaysWeather,
 
