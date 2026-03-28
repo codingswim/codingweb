@@ -40,6 +40,14 @@ export default defineConfig({
   },
   server: {
     port: 8080,
-    open: true
+    open: true,
+    proxy: { // 配置代理
+      '/api': {
+        target: 'https://api-wyy-coding.vercel.app',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
   }
 })
