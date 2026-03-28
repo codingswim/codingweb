@@ -5,28 +5,56 @@
 <script setup lang="ts">
 import * as echarts from "echarts";
 import "echarts-gl";
-import { debounce } from "lodash-es";
+import { debounce, throttle } from "lodash-es";
 import { ref, onMounted, onUnmounted } from "vue";
 import { useWeatherDashboardStore } from "@/stores/weatherDashboard";
+import { zhengzhouAreaMap } from "@/types/area";
 
+// 常量配置
 const defaultBgColor = "#87CEFA";
 const defaultFontColor = "#ffffff";
 const selectedBgColor = "#FFFA99";
 const selectedFontColor = "#000000";
 
+// 状态
 const store = useWeatherDashboardStore();
 const chartRef = ref<HTMLElement | null>(null);
+const selectedName = ref(store.cityName);
 
 let myChart: echarts.ECharts | null = null;
 let geoJson: any = null;
 
-const selectedName = ref(store.cityName);
-
+// 防抖resize
 const resizeChart = debounce(() => {
   myChart?.resize();
+}, 300);
+
+// 格式化 tooltip 内容
+const formatTooltip = (params: { name: string }) => {
+  // 直接从已有的常量中获取数据，0 性能开销
+  const areaInfo = zhengzhouAreaMap[params.name];
+  const population = areaInfo ? `${areaInfo.population}万` : "--";
+  const area = areaInfo ? `${areaInfo.area}平方公里` : "--";
+
+  // 模板字符串精简渲染
+  return `
+    <div style="padding: 10px; min-width: 160px;">
+      <h3 style="margin:0 0 8px; font-size:16px;">${params.name}</h3>
+      <div style="margin-bottom:4px;">人口：${population}</div>
+      <div>面积：${area}</div>
+    </div>
+  `;
+};
+
+// ======================================
+// 🔥 核心优化3：给 formatter 加节流（高频触发限制）
+// ======================================
+const throttledFormatter = throttle(formatTooltip, 100, {
+  leading: true,
+  trailing: false,
 });
 
-// 点击切换
+// 地图点击事件
 const handleMapClick = (params: any) => {
   if (!params.name) return;
   selectedName.value = params.name;
@@ -34,7 +62,7 @@ const handleMapClick = (params: any) => {
   updateMapStyle();
 };
 
-// 更新样式：区域颜色 + 字体颜色
+// 更新地图选中样式
 function updateMapStyle() {
   if (!myChart || !geoJson) return;
 
@@ -43,7 +71,7 @@ function updateMapStyle() {
     const isSelected = name === selectedName.value;
 
     return {
-      name: name,
+      name,
       itemStyle: {
         color: isSelected ? selectedBgColor : defaultBgColor,
         opacity: 1,
@@ -58,14 +86,12 @@ function updateMapStyle() {
   });
 
   myChart.setOption({
-    title:{
-      text: store.cityName,
-    },
-    series: [{ id: "zhengzhouMap", data: data }],
+    title: { text: store.cityName },
+    series: [{ id: "zhengzhouMap", data }],
   });
 }
 
-// 渲染地图
+// 渲染3D地图
 function render3DMap() {
   if (!myChart || !geoJson) return;
 
@@ -80,6 +106,11 @@ function render3DMap() {
       trigger: "item",
       backgroundColor: "rgba(0, 20, 60, 0.7)",
       textStyle: { color: "#fff" },
+      // 额外优化：减少 tooltip 触发频率
+      triggerOn: "mousemove",
+      enterable: false,
+      // 🔥 使用节流后的格式化函数
+      formatter: throttledFormatter,
     },
     series: [
       {
@@ -91,6 +122,17 @@ function render3DMap() {
         roam: true,
         viewControl: { autoRotate: true, rotateSpeed: 4, alpha: 55 },
         itemStyle: { borderWidth: 1.5, borderColor: "#ffffff" },
+
+        // 🔥 全局基础标签配置（统一修复）
+        label: {
+          show: true,
+          position: "bottom", // 1. 文字放在区域下方
+          verticalOffset: 10, // 2. 向下偏移10px（核心！解决顶部截断）
+          distance: 2, // 3. 3D文字距离模型高度
+          lineHeight: 1.2, // 4. 固定行高，长文字不折行截断
+          fontSize: 13, // 5. 微调字号，适配所有区域名称
+        },
+
         emphasis: {
           label: { color: selectedFontColor },
           itemStyle: { color: "#F5DE9D" },
@@ -106,7 +148,7 @@ function render3DMap() {
   updateMapStyle();
 }
 
-// 初始化
+// 生命周期
 onMounted(async () => {
   if (!chartRef.value) return;
 
@@ -119,7 +161,7 @@ onMounted(async () => {
     myChart.showLoading({ text: "3D 地图加载中..." });
 
     render3DMap();
-    store.setCityName(selectedName.value); // 同步默认城市
+    store.setCityName(selectedName.value);
 
     myChart.on("click", "series", handleMapClick);
     myChart.hideLoading();
@@ -134,6 +176,8 @@ onUnmounted(() => {
   window.removeEventListener("resize", resizeChart);
   myChart?.dispose();
   myChart = null;
+  // 清理节流函数
+  throttledFormatter.cancel();
 });
 </script>
 

@@ -2,94 +2,58 @@ import { defineStore } from 'pinia'
 import { getSevenDayWeather, getHourlyWeather, getWeatherNow } from '@/api/qweatherapi'
 import { ref, watchEffect } from 'vue'
 
-// 区域名称到城市代码的映射（示例数据，需要根据实际情况修改）
-const areaCodeMap: Record<string, string> = {
-    中原区: "101180102",
-    二七区: "101180103",
-    管城回族区: "101180104",
-    金水区: "101180105",
-    上街区: "101180106",
-    惠济区: "101180107",
-    新郑市: "101180108",
-    登封市: "101180109",
-    新密市: "101180110",
-    荥阳市: "101180111",
-    巩义市: "101180112",
-    中牟县: "101180113",
-};
-
-// 未来7天天气数据接口
-interface Next7DaysWeatherResponse {
-    fxDate: string;
-    tempMax: number;
-    tempMin: number;
-}
-
-// 未来7小时天气数据接口
-interface Next7HoursWeatherResponse {
-    fxTime: string;
-    temp: number;
-    icon: string;
-    text: string;
-    windDir: string;
-}
-
-// 未来7天天气数据
-interface Next7DaysWeatherData {
-    date: string;
-    high: number;
-    low: number;
-}
-
-// 未来7小时天气数据
-interface Next7HoursWeatherData {
-    fxTime: string;
-    temp: number;
-    icon: string;
-    text: string;
-    windDir: string;
-}
-
-// 实时天气数据
-interface WeatherNowData {
-    temp: string; // 温度，单位：摄氏度
-    icon: string; // 天气图标
-    text: string; // 天气描述
-    windDir: string; // 风向
-    windScale: string; // 风力
-    humidity: string; // 湿度
-}
+// 👇 类型导入
+import type { Next7DaysWeatherResponse, Next7HoursWeatherResponse, Next7DaysWeatherData, Next7HoursWeatherData, WeatherNowData, WeatherCache } from '@/types/weather'
+// 👇 导入区域数据
+import { zhengzhouAreaMap } from '@/types/area'
 
 
+// 👇 缓存过期时间：5分钟（毫秒）
+const CACHE_EXPIRE_TIME = 5 * 60 * 1000;
+
+// 👇 定义天气看板状态
 export const useWeatherDashboardStore = defineStore('weatherDashboard', () => {
     const loading = ref(false)
+    const cityName = ref("中原区")
 
-    const cityName = ref("中原区");
-    const setCityName = (name: string) => {
-        cityName.value = name;
-    }
-
-    // 实时天气数据
-    const weatherNow = ref<WeatherNowData>({
-        temp: "",
-        icon: "",
-        text: "",
-        windDir: "",
-        windScale: "",
-        humidity: "",
-    })
-
-    // 未来7天天气数据
+    // 实时天气
+    const weatherNow = ref<WeatherNowData>({ temp: "", icon: "", text: "", windDir: "", windScale: "", humidity: "" })
+    // 7天天气
     const next7DaysWeather = ref<Next7DaysWeatherData[]>([])
-    // 未来7小时天气数据
+    // 7小时天气
     const next7HoursWeather = ref<Next7HoursWeatherData[]>([])
 
-    /*
-        应该做一个缓存，比如几分钟内不请求，直接从缓存中取
-    */
+    // ===================== 3. 缓存容器（核心） =====================
+    const weatherCache = ref<Record<string, WeatherCache>>({})
 
+    // ===================== 4. 缓存工具函数 =====================
+    // 判断缓存是否有效
+    const isCacheValid = (areaCode: string): boolean => {
+        const cache = weatherCache.value[areaCode];
+        if (!cache) return false;
+        // 当前时间 - 缓存时间 < 过期时间 → 有效
+        return Date.now() - cache.timestamp < CACHE_EXPIRE_TIME;
+    };
 
-    // 获取未来7天天气数据
+    // 写入缓存
+    const setWeatherCache = (areaCode: string) => {
+        weatherCache.value[areaCode] = {
+            weatherNow: { ...weatherNow.value },
+            next7DaysWeather: [...next7DaysWeather.value],
+            next7HoursWeather: [...next7HoursWeather.value],
+            timestamp: Date.now(),
+        };
+    };
+
+    // 从缓存读取数据
+    const getWeatherFromCache = (areaCode: string) => {
+        const cache = weatherCache.value[areaCode];
+        weatherNow.value = cache.weatherNow;
+        next7DaysWeather.value = cache.next7DaysWeather;
+        next7HoursWeather.value = cache.next7HoursWeather;
+    };
+
+    // ===================== 原有请求逻辑（无修改） =====================
     const fetchNext7DaysWeather = async (areaCode: string) => {
         const res = await getSevenDayWeather(areaCode);
         if (res.status == 200) {
@@ -102,7 +66,6 @@ export const useWeatherDashboardStore = defineStore('weatherDashboard', () => {
         }
     }
 
-    // 获取未来7小时天气数据
     const fetchNext7HoursWeather = async (areaCode: string) => {
         const res = await getHourlyWeather(areaCode);
         if (res.status == 200) {
@@ -117,7 +80,6 @@ export const useWeatherDashboardStore = defineStore('weatherDashboard', () => {
         }
     }
 
-    // 获取实时天气数据
     const fetchWeatherNow = async (areaCode: string) => {
         const res = await getWeatherNow(areaCode);
         if (res.status == 200) {
@@ -125,34 +87,47 @@ export const useWeatherDashboardStore = defineStore('weatherDashboard', () => {
         }
     }
 
+    // ===================== 5. 核心：带缓存的请求方法 =====================
     const handleFetch = async (areaCode: string) => {
+        // 1. 缓存命中 → 直接读取，不请求
+        if (isCacheValid(areaCode)) {
+            getWeatherFromCache(areaCode);
+            return;
+        }
+
+        // 2. 缓存未命中/已过期 → 发起请求
         loading.value = true;
         try {
-            await Promise.all(
-                [
-                    fetchNext7DaysWeather(areaCode),
-                    fetchNext7HoursWeather(areaCode),
-                    fetchWeatherNow(areaCode)
-                ]
-            );
+            await Promise.all([
+                fetchNext7DaysWeather(areaCode),
+                fetchNext7HoursWeather(areaCode),
+                fetchWeatherNow(areaCode)
+            ]);
+            // 请求成功 → 写入缓存
+            setWeatherCache(areaCode);
         } finally {
             loading.value = false;
         }
     }
 
+    const setCityName = (name: string) => {
+        cityName.value = name;
+    }
+
+    // 监听城市变化，触发带缓存的请求
     watchEffect(() => {
-        handleFetch(areaCodeMap[cityName.value]);
+        handleFetch(zhengzhouAreaMap[cityName.value].code);
     })
 
+
+    // ===================== 6. 返回状态和方法 =====================
     return {
         loading,
         cityName,
         setCityName,
         weatherNow,
         next7DaysWeather,
-        fetchNext7DaysWeather,
-
         next7HoursWeather,
-        fetchNext7HoursWeather,
+        weatherCache,
     }
 })
