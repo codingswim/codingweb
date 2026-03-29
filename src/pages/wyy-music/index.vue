@@ -7,18 +7,121 @@ import type { MusicItem } from "@/types/music";
 const musicList = ref<MusicItem[]>([]);
 const currentSong = ref<MusicItem | null>(null);
 
-// 获取audio标签
+// 播放相关
 const audioRef = ref<HTMLAudioElement | null>(null);
-const audioUrl = ref<string>(""); // 播放地址
-const currentTime = ref<number>(0); // 当前播放时间
-const duration = ref<number>(0); // 歌曲总时长
-const isPlaying = ref<boolean>(false); // 是否正在播放
+const audioUrl = ref<string>("");
+const currentTime = ref<number>(0);
+const duration = ref<number>(0);
+const isPlaying = ref<boolean>(false);
 
+// 歌词相关
+const lyricLines = ref<{ time: number; text: string }[]>([]);
+const currentLyricText = ref<string>("");
+
+// 解析 LRC 歌词，返回带秒数的数组
+const parseLrc = (raw: string): { time: number; text: string }[] => {
+  if (!raw) return [];
+  const lines = raw.split(/\r?\n/);
+  const result: { time: number; text: string }[] = [];
+
+  // 时间标签正则：[mm:ss.xx] 或 [mm:ss.xx]
+  const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/g;
+
+  for (const line of lines) {
+    if (!line.trim()) continue;
+
+    // 提取所有时间标签
+    let match;
+    const times: number[] = [];
+    let lastIndex = 0;
+    let textStart = -1;
+
+    // 先找到所有时间标签的位置
+    while ((match = timeRegex.exec(line)) !== null) {
+      const minutes = parseInt(match[1], 10);
+      const seconds = parseInt(match[2], 10);
+      const millis = match[3] ? parseInt(match[3], 10) : 0;
+      // 兼容毫秒为2位或3位
+      const totalSeconds =
+        minutes * 60 + seconds + millis / (match[3].length === 2 ? 100 : 1000);
+      times.push(totalSeconds);
+      lastIndex = match.index + match[0].length;
+    }
+
+    // 获取歌词文本（去掉所有时间标签后的内容）
+    let text = line.replace(timeRegex, "").trim();
+    if (!text) continue; // 跳过只有时间标签的空行
+
+    // 为每个时间戳生成一条记录
+    for (const t of times) {
+      result.push({ time: t, text });
+    }
+  }
+
+  // 按时间排序（防止原始文件乱序）
+  result.sort((a, b) => a.time - b.time);
+  return result;
+};
+
+// 获取歌词并解析
+const fetchLyric = async (songId: number) => {
+  if (!songId) return;
+  try {
+    const { data } = await getLyric(songId);
+    if (data.code === 200 && data.lrc?.lyric) {
+      lyricLines.value = parseLrc(data.lrc.lyric);
+    } else {
+      lyricLines.value = [];
+    }
+    currentLyricText.value = ""; // 切换歌曲时清空当前歌词
+  } catch (error) {
+    console.error(error);
+    lyricLines.value = [];
+    currentLyricText.value = "";
+  }
+};
+
+// 根据当前播放时间更新当前歌词
+const updateCurrentLyric = () => {
+  if (!lyricLines.value.length) {
+    currentLyricText.value = "";
+    return;
+  }
+
+  let matchedLyric = "";
+  // 从后往前找第一个时间 <= currentTime 的歌词
+  for (let i = lyricLines.value.length - 1; i >= 0; i--) {
+    if (lyricLines.value[i].time <= currentTime.value) {
+      matchedLyric = lyricLines.value[i].text;
+      break;
+    }
+  }
+  currentLyricText.value = matchedLyric;
+};
+
+// 监听播放时间变化，更新歌词
+watch(currentTime, () => {
+  updateCurrentLyric();
+});
+
+// 歌曲切换时重新获取歌词
+watch(currentSong, (newSong) => {
+  if (newSong) {
+    fetchSongUrl(newSong.id);
+    fetchLyric(newSong.id);
+    // 重置播放状态
+    if (audioRef.value) {
+      audioRef.value.currentTime = 0;
+      currentTime.value = 0;
+    }
+    isPlaying.value = false;
+  }
+});
+
+// ---------- 以下为原有的音乐列表、播放控制逻辑 ----------
 const fetchMusicList = async () => {
   try {
-    // 获取所有歌曲
     const allRes = await getLiRongHaoSongs();
-    // 检查响应数据
     if (
       allRes.data.code !== 200 ||
       !allRes.data.songs ||
@@ -28,13 +131,11 @@ const fetchMusicList = async () => {
       return;
     }
 
-    // 过滤出可播放的歌曲（检查 privilege 是否存在且 st === 0）
     const playableSongs = allRes.data.songs.filter((item: MusicItem) => {
       return item.privilege?.st === 0;
     });
     musicList.value = playableSongs;
 
-    // 播放第一首歌曲（检查是否有可播放的歌曲）
     if (musicList.value.length === 0) {
       console.warn("没有可播放的歌曲");
       return;
@@ -46,7 +147,6 @@ const fetchMusicList = async () => {
   }
 };
 
-// 获取播放地址
 const fetchSongUrl = async (songId: number) => {
   if (!songId) return;
   try {
@@ -64,26 +164,6 @@ const fetchSongUrl = async (songId: number) => {
   }
 };
 
-// 获取歌词
-const fetchLyric = async (songId: number) => {
-  if (!songId) return;
-  try {
-    const { data } = await getLyric(songId);
-    if (data.code === 200) {
-    }
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-watch(currentSong, (newSong) => {
-  if (newSong) {
-    fetchSongUrl(newSong.id); // 获取播放地址
-    fetchLyric(newSong.id); // 获取歌词
-  }
-});
-
-// 加载歌曲元数据
 const handleLoadedMetadata = () => {
   const audio = audioRef.value;
   if (!audio) return;
@@ -91,7 +171,6 @@ const handleLoadedMetadata = () => {
   currentTime.value = audio.currentTime || 0;
 };
 
-// 格式化时间
 const formatTime = (sec: number) => {
   if (!sec || !Number.isFinite(sec)) return "00:00";
   const s = Math.floor(sec);
@@ -114,12 +193,10 @@ const handleProgressClick = (event: MouseEvent) => {
   currentTime.value = newTime;
 };
 
-// 歌曲播放结束
 const handleAudioEnded = () => {
   isPlaying.value = false;
 };
 
-// 歌曲播放时间更新
 const handleTimeUpdate = () => {
   const audio = audioRef.value;
   if (!audio) return;
@@ -129,7 +206,6 @@ const handleTimeUpdate = () => {
   }
 };
 
-// 播放音乐事件
 const handleTogglePlay = () => {
   const audio = audioRef.value;
   if (!audio || !audioUrl.value) return;
@@ -238,6 +314,13 @@ onMounted(() => {
         </div>
       </div>
     </div>
+
+    <!-- 当前歌词显示层（屏幕中央最上层） -->
+    <Transition name="fade">
+      <div v-if="currentLyricText" class="current-lyric">
+        {{ currentLyricText }}
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -262,7 +345,6 @@ onMounted(() => {
     line-height: 42px;
     padding: 0 32px;
     position: relative;
-
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-gap: 20px;
@@ -291,40 +373,6 @@ onMounted(() => {
     display: none;
   }
 
-  .controls-main {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-  }
-
-  .btn-circle {
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    background: #fff;
-    color: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
-  }
-
-  .btn-large {
-    width: 56px;
-    height: 56px;
-    font-size: 22px;
-  }
-
-  .btn-small {
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
-  }
-
-  .btn-circle:hover {
-    transform: translateY(-1px);
-  }
-
   .progress-wrap {
     display: flex;
     align-items: center;
@@ -343,9 +391,9 @@ onMounted(() => {
     background: rgba(255, 255, 255, 0.2);
     overflow: hidden;
 
-    // 滑过放大
     &:hover {
       transform: scale(1, 1.6);
+      cursor: pointer;
     }
   }
 
@@ -353,23 +401,6 @@ onMounted(() => {
     height: 100%;
     border-radius: 999px;
     background: linear-gradient(90deg, #ff4b2b, #ff416c);
-  }
-
-  .controls-extra {
-    display: none;
-  }
-
-  .extra-left,
-  .extra-right {
-    display: none;
-  }
-
-  .btn-text {
-    display: none;
-  }
-
-  .btn-text:hover {
-    color: #fff;
   }
 
   .controls_main {
@@ -392,11 +423,9 @@ onMounted(() => {
         font-size: 16px;
         font-weight: 500;
       }
-
       div:nth-child(2) {
         color: #e60026;
         position: relative;
-        // 加个伪元素在右上方，内容是 100w+
         &::after {
           content: "10w+";
           position: absolute;
@@ -411,11 +440,9 @@ onMounted(() => {
       text-align: center;
       justify-content: center;
       font-size: 50px;
-
       div {
         cursor: pointer;
       }
-
       div:hover {
         color: #e60026;
         transform: scale(1.1);
@@ -424,7 +451,6 @@ onMounted(() => {
     .controls_right {
       text-align: right;
       justify-content: flex-end;
-
       div:first-child {
         font-size: 16px;
         font-weight: 500;
@@ -434,5 +460,39 @@ onMounted(() => {
       }
     }
   }
+}
+
+/* 当前歌词样式：屏幕正中央，大字，半透明背景，不干扰点击 */
+.current-lyric {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  font-size: 3rem; /* 大字体 */
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  padding: 0.8rem 2rem;
+  border-radius: 3rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 85vw;
+  pointer-events: none; /* 让歌词不干扰点击下面的按钮 */
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 歌词淡入淡出效果 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
