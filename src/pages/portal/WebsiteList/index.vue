@@ -78,12 +78,12 @@ const deleteWebsite = async (id: number, e: Event) => {
   try {
     await websiteStore.deleteWebsite(id);
     ElMessage({
-      message: t("message.deleteSuccess"),
+      message: t("portal.deleteSuccess"),
       type: "success",
     });
   } catch (error) {
     ElMessage({
-      message: t("message.deleteFailed") || "删除失败",
+      message: t("portal.deleteFailed") || "删除失败",
       type: "error",
     });
   }
@@ -97,13 +97,13 @@ const handleSave = async () => {
       url: form.value.url.trim(),
     });
     ElMessage({
-      message: t("message.saveSuccess"),
+      message: t("portal.saveSuccess"),
       type: "success",
     });
     closeModal();
   } catch (error) {
     ElMessage({
-      message: t("message.saveFailed") || "保存失败",
+      message: t("portal.saveFailed") || "保存失败",
       type: "error",
     });
   } finally {
@@ -119,9 +119,9 @@ const closeModal = () => {
 const onDragEnd = async () => {
   try {
     await websiteStore.updateSort();
-    ElMessage.success(t("message.sortSuccess"));
+    ElMessage.success(t("portal.sortSuccess"));
   } catch (e) {
-    ElMessage.error(t("message.sortFailed"));
+    ElMessage.error(t("portal.sortFailed"));
     await websiteStore.fetchList();
   }
 };
@@ -142,11 +142,11 @@ const onDragEnd = async () => {
           <el-popconfirm
             class="box-item"
             width="200px"
-            :title="$t('message.confirmDelete')"
+            :title="$t('portal.confirmDelete')"
             placement="top-end"
             @confirm="deleteWebsite(item.id, $event)"
-            :confirm-button-text="$t('message.confirm')"
-            :cancel-button-text="$t('message.cancel')"
+            :confirm-button-text="$t('portal.confirm')"
+            :cancel-button-text="$t('portal.cancel')"
           >
             <template #reference>
               <el-icon class="del_icon" @click.stop><Delete /></el-icon>
@@ -170,7 +170,7 @@ const onDragEnd = async () => {
 
     <el-empty
       v-if="websiteStore.filteredList.length === 0 && !websiteStore.loading"
-      :description="$t('message.empty')"
+      :description="$t('portal.empty')"
       :image-size="100"
     />
   </div>
@@ -187,7 +187,7 @@ const onDragEnd = async () => {
 
   <!-- Element Plus 对话框 -->
   <el-dialog
-    :title="$t('message.addShortcut')"
+    :title="$t('portal.addShortcut')"
     :width="isMobile ? '90%' : '512px'"
     @close="closeModal"
     v-model="showModal"
@@ -195,13 +195,13 @@ const onDragEnd = async () => {
     custom-class="custom-dialog"
   >
     <el-form :model="form" label-width="50px">
-      <el-form-item :label="$t('message.name')">
-        <el-input v-model="form.name" :placeholder="$t('message.example') + '：GitHub'" />
+      <el-form-item :label="$t('portal.name')">
+        <el-input v-model="form.name" :placeholder="$t('portal.example') + '：GitHub'" />
       </el-form-item>
-      <el-form-item :label="$t('message.url')">
+      <el-form-item :label="$t('portal.url')">
         <el-input
           v-model="form.url"
-          :placeholder="$t('message.example') + '：https://github.com'"
+          :placeholder="$t('portal.example') + '：https://github.com'"
         />
       </el-form-item>
     </el-form>
@@ -212,7 +212,7 @@ const onDragEnd = async () => {
           display: saveLoading ? 'none' : 'inline-block',
         }"
         @click="closeModal"
-        >{{ $t("message.cancel") }}</el-button
+        >{{ $t("portal.cancel") }}</el-button
       >
       <el-button
         type="primary"
@@ -221,7 +221,7 @@ const onDragEnd = async () => {
         :disabled="!form.name.trim() || !form.url.trim()"
         :loading="saveLoading"
       >
-        {{ $t("message.save") }}
+        {{ $t("portal.save") }}
       </el-button>
     </template>
   </el-dialog>

@@ -63,11 +63,11 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import SoundCard from '@/components/WhiteNoise/SoundCard.vue'
-import PresetHeader from '@/components/WhiteNoise/PresetHeader.vue'
-import PlaybackControls from '@/components/WhiteNoise/PlaybackControls.vue'
-import VisualizerCanvas from '@/components/WhiteNoise/VisualizerCanvas.vue'
-import { WHITE_NOISE_ICON_MAP } from '@/components/WhiteNoise/whiteNoiseIcons'
+import SoundCard from '@/pages/white-noise/WhiteNoise/SoundCard.vue'
+import PresetHeader from '@/pages/white-noise/WhiteNoise/PresetHeader.vue'
+import PlaybackControls from '@/pages/white-noise/WhiteNoise/PlaybackControls.vue'
+import VisualizerCanvas from '@/pages/white-noise/WhiteNoise/VisualizerCanvas.vue'
+import { WHITE_NOISE_ICON_MAP } from '@/pages/white-noise/WhiteNoise/whiteNoiseIcons'
 import {
   BUILTIN_PRESETS,
   STORAGE_KEY,
@@ -165,7 +165,7 @@ function saveCombo() {
   }
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
-    ElMessage.success(t('message.saveSuccess'))
+    ElMessage.success(t('portal.saveSuccess'))
   } catch {
     ElMessage.error(t('whiteNoise.saveFailed'))
   }

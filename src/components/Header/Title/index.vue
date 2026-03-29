@@ -2,8 +2,8 @@
 </script>
 <template>
   <div class="title">
-    <h1>Portal</h1>
-    <span class="beta">{{ $t("message.beta") }}</span>
+    <h1>{{ $t("global.title") }}</h1>
+    <span class="beta">{{ $t("global.beta") }}</span>
   </div>
 </template>
 <script setup lang="ts"></script>

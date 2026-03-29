@@ -4,14 +4,17 @@
       <Title />
     </div>
     <div class="header_right">
+      <router-link class="header-nav-link" to="/portal">{{
+        $t("portal.navTitle")
+      }}</router-link>
+      <router-link class="header-nav-link" to="/wyy-music">{{
+        $t("wyyMusic.navTitle")
+      }}</router-link>
       <router-link class="header-nav-link" to="/weather-dashboard">{{
         $t("dashboard.title")
       }}</router-link>
       <router-link class="header-nav-link" to="/white-noise">{{
         $t("whiteNoise.navTitle")
-      }}</router-link>
-      <router-link class="header-nav-link" to="/wyy-music">{{
-        $t("wyyMusic.navTitle")
       }}</router-link>
       <ThemeSwitch />
       <LangSwitch />

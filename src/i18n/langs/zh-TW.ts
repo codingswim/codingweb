@@ -1,5 +1,13 @@
 export default {
-  message: {
+  // 全局相关
+  global: {
+    title: 'CODINGSWIM',
+    beta: '測試版本',
+  },
+
+  // 门户相关
+  portal: {
+    navTitle: '门户',
     greeting: '你好',
     lyric: '別回头看，回头太难，你要變得勇敢。',
     goodNight: '深夜好！',
@@ -9,7 +17,6 @@ export default {
     goodEvening: '晚上好！',
 
     addShortcut: '新增快捷方式',
-    beta: '測試版本',
     pleaseInput: '請輸入',
     cancel: '取消',
     save: '保存',
@@ -78,6 +85,6 @@ export default {
   },
 
   wyyMusic: {
-    navTitle: 'Music',
+    navTitle: '发现音乐',
   },
 };

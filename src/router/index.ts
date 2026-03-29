@@ -6,6 +6,7 @@ import home from '@/pages/home/index.vue'
 import weatherDashboard from '@/pages/weather-dashboard/index.vue'
 import whiteNoise from '@/pages/white-noise/index.vue'
 import wyyMusic from '@/pages/wyy-music/index.vue'
+import portal from '@/pages/portal/index.vue'
 
 // 3. 配置路由规则
 const routes: RouteRecordRaw[] = [
@@ -45,6 +46,16 @@ const routes: RouteRecordRaw[] = [
         component: wyyMusic,
         meta: {
             title: 'Music',
+            requiresAuth: false,
+            keepAlive: false
+        }
+    },
+    {
+        path: '/portal',
+        name: 'portal',
+        component: portal,
+        meta: {
+            title: 'Portal',
             requiresAuth: false,
             keepAlive: false
         }

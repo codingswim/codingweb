@@ -13,7 +13,7 @@ const websiteStore = useWebsiteStore();
     <input
       type="text"
       v-model="searchStore.searchTerm"
-      :placeholder="t('message.pleaseInput')"
+      :placeholder="t('portal.pleaseInput')"
       @blur="websiteStore.syncFilteredList(searchStore.searchTerm)"
       @clear="websiteStore.syncFilteredList('')"
     />

@@ -1,5 +1,12 @@
 export default {
-  message: {
+  // 全局相关
+  global: {
+    title: 'CODINGSWIM',
+    beta: 'Beta',
+  },
+  // 门户相关
+  portal: {
+    navTitle: 'Portal',
     greeting: 'Hello',
     lyric: 'Don\'t look back, it\'s too hard, you have to become brave.',
     goodNight: 'Good Night!',
@@ -9,7 +16,6 @@ export default {
     goodEvening: 'Good Evening!',
 
     addShortcut: 'Add Shortcut',
-    beta: 'Beta',
     pleaseInput: 'Please input',
     cancel: 'Cancel',
     save: 'Save',
@@ -77,6 +83,6 @@ export default {
   },
 
   wyyMusic: {
-    navTitle: 'Music',
+    navTitle: 'Find Music',
   },
 };
