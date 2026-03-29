@@ -13,6 +13,8 @@ import {
   FirstAidKit,
   Share,
 } from "@element-plus/icons-vue";
+import MusicList from "./components/MusicList.vue";
+import Title from "./components/Title.vue";
 
 const musicList = ref<MusicItem[]>([]);
 const currentSong = ref<MusicItem | null>(null);
@@ -45,7 +47,8 @@ const parseLrc = (raw: string): { time: number; text: string }[] => {
       const minutes = parseInt(match[1], 10);
       const seconds = parseInt(match[2], 10);
       const millis = match[3] ? parseInt(match[3], 10) : 0;
-      const totalSeconds = minutes * 60 + seconds + millis / (match[3].length === 2 ? 100 : 1000);
+      const totalSeconds =
+        minutes * 60 + seconds + millis / (match[3].length === 2 ? 100 : 1000);
       times.push(totalSeconds);
     }
 
@@ -110,6 +113,14 @@ watch(currentTime, () => {
   updateCurrentLyric();
 });
 
+watch(audioUrl, (newUrl, oldUrl) => {
+  // console.log("🚀 ~ oldUrl:", oldUrl);
+  // console.log("🚀 ~ newUrl:", newUrl);
+  // if (newUrl) {
+  //   handleTogglePlay();
+  // }
+});
+
 // 切换歌曲
 watch(currentSong, (newSong) => {
   if (newSong) {
@@ -128,7 +139,9 @@ const fetchMusicList = async () => {
   try {
     const allRes = await getLiRongHaoSongs();
     if (allRes.data.code !== 200 || !allRes.data.songs) return;
-    const playableSongs = allRes.data.songs.filter((item: MusicItem) => item.privilege?.st === 0);
+    const playableSongs = allRes.data.songs.filter(
+      (item: MusicItem) => item.privilege?.st === 0
+    );
     musicList.value = playableSongs;
     if (musicList.value.length) currentSong.value = musicList.value[0];
   } catch (error) {
@@ -143,7 +156,9 @@ const fetchSongUrl = async (songId: number) => {
     if (data.code === 200 && data.data.length) {
       audioUrl.value = data.data[0].url || "";
     }
-  } catch (error) { console.error(error); }
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const handleLoadedMetadata = () => {
@@ -170,7 +185,9 @@ const handleProgressClick = (event: MouseEvent) => {
   currentTime.value = audio.currentTime;
 };
 
-const handleAudioEnded = () => { isPlaying.value = false; };
+const handleAudioEnded = () => {
+  isPlaying.value = false;
+};
 const handleTimeUpdate = () => {
   const audio = audioRef.value;
   if (!audio) return;
@@ -181,7 +198,7 @@ const handleTogglePlay = () => {
   const audio = audioRef.value;
   if (!audio || !audioUrl.value) return;
   if (audio.paused) {
-    audio.play().then(() => isPlaying.value = true);
+    audio.play().then(() => (isPlaying.value = true));
   } else {
     audio.pause();
     isPlaying.value = false;
@@ -193,13 +210,18 @@ const handlePrev = () => {
   const idx = musicList.value.indexOf(currentSong.value);
   if (idx > 0) {
     currentSong.value = musicList.value[idx - 1];
-  };
+  }
 };
 
 const handleNext = () => {
   if (!currentSong.value) return;
   const idx = musicList.value.indexOf(currentSong.value);
   if (idx < musicList.value.length - 1) currentSong.value = musicList.value[idx + 1];
+};
+
+// 处理子组件触发的事件
+const handleSelectSong = (song: MusicItem) => {
+  currentSong.value = song;
 };
 
 onMounted(() => {
@@ -209,24 +231,25 @@ onMounted(() => {
 
 <template>
   <div class="wrapper">
+    <!-- 头部导航 -->
     <Header />
-    <div class="title"></div>
-    <div class="main">
-      <div
-        v-for="song in musicList"
-        :key="song.id"
-        class="song-item"
-        @click="currentSong = song"
-      >
-        <span>{{ song.name }} - {{ song.ar[0].name }}</span>
-      </div>
-    </div>
+    <!-- 标题 -->
+    <Title />
+    <!-- 音乐列表 父组件向子组件传递数据，子组件监听歌曲选择事件 -->
+    <MusicList
+      :musicList="musicList"
+      :currentSong="currentSong"
+      @selectSong="handleSelectSong"
+    />
 
     <div class="player-controls" v-if="currentSong">
       <div class="progress-wrap">
         <span class="time-label">{{ formatTime(currentTime) }}</span>
         <div class="progress-bar" @click="handleProgressClick">
-          <div class="progress-inner" :style="{ width: duration ? `${(currentTime / duration) * 100}%` : 0 }"></div>
+          <div
+            class="progress-inner"
+            :style="{ width: duration ? `${(currentTime / duration) * 100}%` : 0 }"
+          ></div>
         </div>
         <span class="time-label">{{ formatTime(duration) }}</span>
       </div>
@@ -247,32 +270,40 @@ onMounted(() => {
             <h3>{{ currentSong?.name }}</h3>
             <p>{{ currentSong?.ar[0].name }}</p>
           </div>
-          <div><el-icon><StarFilled /></el-icon></div>
-          <div><el-icon><ChatLineRound /></el-icon></div>
+          <div>
+            <el-icon><StarFilled /></el-icon>
+          </div>
+          <div>
+            <el-icon><ChatLineRound /></el-icon>
+          </div>
         </div>
         <div class="control controls_center">
-          <div @click="handlePrev"><el-icon><CaretLeft /></el-icon></div>
+          <div @click="handlePrev">
+            <el-icon><CaretLeft /></el-icon>
+          </div>
           <div @click="handleTogglePlay">
             <el-icon v-if="isPlaying"><VideoPause /></el-icon>
             <el-icon v-else><VideoPlay /></el-icon>
           </div>
-          <div @click="handleNext"><el-icon><CaretRight /></el-icon></div>
+          <div @click="handleNext">
+            <el-icon><CaretRight /></el-icon>
+          </div>
         </div>
         <div class="control controls_right">
           <div>超清母带</div>
-          <div><el-icon><FirstAidKit /></el-icon></div>
-          <div><el-icon><Share /></el-icon></div>
+          <div>
+            <el-icon><FirstAidKit /></el-icon>
+          </div>
+          <div>
+            <el-icon><Share /></el-icon>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- 纯文字波浪动画（你要的极简效果） -->
     <div class="lyric-wave-box" v-if="currentLyricText">
-      <span
-        v-for="item in currentLyricChars"
-        :key="item.index"
-        class="char-animate"
-      >
+      <span v-for="item in currentLyricChars" :key="item.index" class="char-animate">
         {{ item.char }}
       </span>
     </div>
@@ -284,29 +315,6 @@ onMounted(() => {
   width: 100%;
   height: 100vh;
   background: url(@/assets/images/wyybg.png) no-repeat center / cover;
-
-  .title {
-    width: 500px;
-    height: 82px;
-    margin: 60px auto;
-    background: url(@/assets/images/wyytitle.png) no-repeat center / cover;
-  }
-
-  .main {
-    width: 100%;
-    padding: 0 32px;
-    color: #fff;
-    font-size: 24px;
-    line-height: 42px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-
-    .song-item {
-      text-align: center;
-      cursor: pointer;
-    }
-  }
 
   .player-controls {
     width: 80%;
@@ -321,21 +329,29 @@ onMounted(() => {
     gap: 16px;
   }
 
-  .audio-hidden { display: none; }
+  .audio-hidden {
+    display: none;
+  }
 
   .progress-wrap {
     display: flex;
     align-items: center;
     gap: 12px;
   }
-  .time-label { font-size: 12px; color: #c0c0c0; }
+  .time-label {
+    font-size: 12px;
+    color: #c0c0c0;
+  }
   .progress-bar {
     flex: 1;
     height: 4px;
     border-radius: 999px;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     overflow: hidden;
-    &:hover { transform: scaleY(1.6); cursor: pointer; }
+    &:hover {
+      transform: scaleY(1.6);
+      cursor: pointer;
+    }
   }
   .progress-inner {
     height: 100%;
@@ -376,8 +392,13 @@ onMounted(() => {
     .controls_center {
       justify-content: center;
       font-size: 50px;
-      div { cursor: pointer; }
-      div:hover { color: #e60026; transform: scale(1.1); }
+      div {
+        cursor: pointer;
+      }
+      div:hover {
+        color: #e60026;
+        transform: scale(1.1);
+      }
     }
     .controls_right {
       text-align: right;
@@ -413,26 +434,52 @@ onMounted(() => {
   font-size: 6rem;
   font-weight: bold;
   color: white;
-  text-shadow: 0 0 10px rgba(0,0,0,0.8);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
   font-family: "Microsoft YaHei", sans-serif;
   animation: wave 1.2s ease-in-out infinite;
 }
 
 /* 从左到右依次延迟，形成流动波浪 */
-.char-animate:nth-child(1)  { animation-delay: 0s; }
-.char-animate:nth-child(2)  { animation-delay: 0.1s; }
-.char-animate:nth-child(3)  { animation-delay: 0.2s; }
-.char-animate:nth-child(4)  { animation-delay: 0.3s; }
-.char-animate:nth-child(5)  { animation-delay: 0.4s; }
-.char-animate:nth-child(6)  { animation-delay: 0.5s; }
-.char-animate:nth-child(7)  { animation-delay: 0.6s; }
-.char-animate:nth-child(8)  { animation-delay: 0.7s; }
-.char-animate:nth-child(9)  { animation-delay: 0.8s; }
-.char-animate:nth-child(n+10){ animation-delay: 0.9s; }
+.char-animate:nth-child(1) {
+  animation-delay: 0s;
+}
+.char-animate:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.char-animate:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.char-animate:nth-child(4) {
+  animation-delay: 0.3s;
+}
+.char-animate:nth-child(5) {
+  animation-delay: 0.4s;
+}
+.char-animate:nth-child(6) {
+  animation-delay: 0.5s;
+}
+.char-animate:nth-child(7) {
+  animation-delay: 0.6s;
+}
+.char-animate:nth-child(8) {
+  animation-delay: 0.7s;
+}
+.char-animate:nth-child(9) {
+  animation-delay: 0.8s;
+}
+.char-animate:nth-child(n + 10) {
+  animation-delay: 0.9s;
+}
 
 @keyframes wave {
-  0%  { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-  100%{ transform: translateY(0); }
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 </style>
