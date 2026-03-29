@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from "vue";
 import Header from "./components/Header.vue";
 import { getLiRongHaoSongs, getLyric, getSongUrl } from "@/api/music";
-import type { MusicItem, LyricChar, Album } from "@/types/music";
+import type { MusicItem, LyricChar } from "@/types/music";
 import { parseLrc, splitLyricIntoChars, formatTime } from "@/utils/lyric";
 import Title from "./components/Title.vue";
 import MusicList from "./components/MusicList.vue";
