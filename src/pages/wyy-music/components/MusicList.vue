@@ -15,8 +15,6 @@ const props = withDefaults(
   }
 );
 
-console.log(props.currentSong);
-
 // 定义可以向父组件触发的事件
 const emit = defineEmits(["selectSong"]);
 

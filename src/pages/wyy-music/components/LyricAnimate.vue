@@ -13,6 +13,7 @@ const props = withDefaults(
     isPlaying: false,
   }
 );
+const { currentLyricText, currentLyricChars, isPlaying } = toRefs(props);
 </script>
 
 <template>
