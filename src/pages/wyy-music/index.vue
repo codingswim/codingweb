@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from "vue";
 import Header from "./components/Header.vue";
 import { getLiRongHaoSongs, getLyric, getSongUrl } from "@/api/music";
-import type { MusicItem } from "@/types/music";
+import type { MusicItem, LyricChar } from "@/types/music";
 import {
   StarFilled,
   ChatLineRound,
@@ -13,8 +13,9 @@ import {
   FirstAidKit,
   Share,
 } from "@element-plus/icons-vue";
-import MusicList from "./components/MusicList.vue";
 import Title from "./components/Title.vue";
+import MusicList from "./components/MusicList.vue";
+import LyricAnimate from "./components/LyricAnimate.vue";
 
 const musicList = ref<MusicItem[]>([]);
 const currentSong = ref<MusicItem | null>(null);
@@ -29,7 +30,7 @@ const isPlaying = ref<boolean>(false);
 // 歌词相关
 const lyricLines = ref<{ time: number; text: string }[]>([]);
 const currentLyricText = ref<string>("");
-const currentLyricChars = ref<{ char: string; index: number }[]>([]);
+const currentLyricChars = ref<LyricChar[]>([]);
 
 // 解析 LRC 歌词
 const parseLrc = (raw: string): { time: number; text: string }[] => {
@@ -302,11 +303,10 @@ onMounted(() => {
     </div>
 
     <!-- 纯文字波浪动画（你要的极简效果） -->
-    <div class="lyric-wave-box" v-if="currentLyricText">
-      <span v-for="item in currentLyricChars" :key="item.index" class="char-animate">
-        {{ item.char }}
-      </span>
-    </div>
+    <LyricAnimate
+      :currentLyricText="currentLyricText"
+      :currentLyricChars="currentLyricChars"
+    />
   </div>
 </template>
 
@@ -414,72 +414,4 @@ onMounted(() => {
   }
 }
 
-/* ====================== 你要的极简波浪动画 ====================== */
-.lyric-wave-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10000;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  max-width: 85vw;
-  pointer-events: none;
-  gap: 2px;
-}
-
-.char-animate {
-  font-size: 6rem;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-  font-family: "Microsoft YaHei", sans-serif;
-  animation: wave 1.2s ease-in-out infinite;
-}
-
-/* 从左到右依次延迟，形成流动波浪 */
-.char-animate:nth-child(1) {
-  animation-delay: 0s;
-}
-.char-animate:nth-child(2) {
-  animation-delay: 0.1s;
-}
-.char-animate:nth-child(3) {
-  animation-delay: 0.2s;
-}
-.char-animate:nth-child(4) {
-  animation-delay: 0.3s;
-}
-.char-animate:nth-child(5) {
-  animation-delay: 0.4s;
-}
-.char-animate:nth-child(6) {
-  animation-delay: 0.5s;
-}
-.char-animate:nth-child(7) {
-  animation-delay: 0.6s;
-}
-.char-animate:nth-child(8) {
-  animation-delay: 0.7s;
-}
-.char-animate:nth-child(9) {
-  animation-delay: 0.8s;
-}
-.char-animate:nth-child(n + 10) {
-  animation-delay: 0.9s;
-}
-
-@keyframes wave {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
 </style>

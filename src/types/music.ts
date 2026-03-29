@@ -69,3 +69,11 @@ export interface SongUrlApiResponse {
     }[];
     [key: string]: any;
 }
+
+/**
+ * 歌词字符类型
+*/
+export interface LyricChar {
+    char: string;
+    index: number;
+}
