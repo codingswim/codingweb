@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from "vue";
 import Header from "./components/Header.vue";
 import { getLiRongHaoSongs, getLyric, getSongUrl } from "@/api/music";
 import type { MusicItem, LyricChar } from "@/types/music";
+import { parseLrc, splitLyricIntoChars, formatTime } from "@/utils/lyric";
 import Title from "./components/Title.vue";
 import MusicList from "./components/MusicList.vue";
 import LyricAnimate from "./components/LyricAnimate.vue";
@@ -22,44 +23,6 @@ const isPlaying = ref<boolean>(false);
 const lyricLines = ref<{ time: number; text: string }[]>([]);
 const currentLyricText = ref<string>("");
 const currentLyricChars = ref<LyricChar[]>([]);
-
-// 解析 LRC 歌词
-const parseLrc = (raw: string): { time: number; text: string }[] => {
-  if (!raw) return [];
-  const lines = raw.split(/\r?\n/);
-  const result: { time: number; text: string }[] = [];
-  const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/g;
-
-  for (const line of lines) {
-    if (!line.trim()) continue;
-    let match;
-    const times: number[] = [];
-
-    while ((match = timeRegex.exec(line)) !== null) {
-      const minutes = parseInt(match[1], 10);
-      const seconds = parseInt(match[2], 10);
-      const millis = match[3] ? parseInt(match[3], 10) : 0;
-      const totalSeconds =
-        minutes * 60 + seconds + millis / (match[3].length === 2 ? 100 : 1000);
-      times.push(totalSeconds);
-    }
-
-    let text = line.replace(timeRegex, "").trim();
-    if (!text) continue;
-
-    for (const t of times) {
-      result.push({ time: t, text });
-    }
-  }
-  result.sort((a, b) => a.time - b.time);
-  return result;
-};
-
-// 拆分成单个文字
-const splitLyricIntoChars = (text: string) => {
-  if (!text) return [];
-  return text.split("").map((char, index) => ({ char, index }));
-};
 
 // 获取歌词
 const fetchLyric = async (songId: number) => {
@@ -149,14 +112,6 @@ const handleLoadedMetadata = () => {
   const audio = audioRef.value;
   if (!audio) return;
   duration.value = audio.duration || 0;
-};
-
-const formatTime = (sec: number) => {
-  if (!sec || !Number.isFinite(sec)) return "00:00";
-  const s = Math.floor(sec);
-  const m = Math.floor(s / 60);
-  const rs = s % 60;
-  return `${m.toString().padStart(2, "0")}:${rs.toString().padStart(2, "0")}`;
 };
 
 const handleProgressClick = (event: MouseEvent) => {
