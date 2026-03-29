@@ -5,17 +5,23 @@ const props = withDefaults(
   defineProps<{
     currentLyricText: string;
     currentLyricChars: LyricChar[];
+    isPlaying: boolean;
   }>(),
   {
     currentLyricText: "",
     currentLyricChars: () => [],
+    isPlaying: false,
   }
 );
 </script>
 
 <template>
   <div class="lyric-wave-box" v-if="currentLyricText">
-    <span v-for="item in currentLyricChars" :key="item.index" class="char-animate">
+    <span
+      v-for="item in currentLyricChars"
+      :key="item.index"
+      :class="['char-animate', { paused: !isPlaying }]"
+    >
       {{ item.char }}
     </span>
   </div>
@@ -44,6 +50,11 @@ const props = withDefaults(
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
   font-family: "Microsoft YaHei", sans-serif;
   animation: wave 1.2s ease-in-out infinite;
+
+  &.paused {
+    animation-play-state: paused;
+    opacity: 0.7; // 暂停时稍微降低透明度
+  }
 }
 
 /* 从左到右依次延迟，形成流动波浪 */

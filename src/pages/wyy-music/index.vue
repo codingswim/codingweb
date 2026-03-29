@@ -114,14 +114,6 @@ watch(currentTime, () => {
   updateCurrentLyric();
 });
 
-watch(audioUrl, (newUrl, oldUrl) => {
-  // console.log("🚀 ~ oldUrl:", oldUrl);
-  // console.log("🚀 ~ newUrl:", newUrl);
-  // if (newUrl) {
-  //   handleTogglePlay();
-  // }
-});
-
 // 切换歌曲
 watch(currentSong, (newSong) => {
   if (newSong) {
@@ -242,6 +234,12 @@ onMounted(() => {
       :currentSong="currentSong"
       @selectSong="handleSelectSong"
     />
+    <!-- 纯文字波浪动画（你要的极简效果） -->
+    <LyricAnimate
+      :currentLyricText="currentLyricText"
+      :currentLyricChars="currentLyricChars"
+      :isPlaying="isPlaying"
+    />
 
     <div class="player-controls" v-if="currentSong">
       <div class="progress-wrap">
@@ -301,12 +299,6 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
-    <!-- 纯文字波浪动画（你要的极简效果） -->
-    <LyricAnimate
-      :currentLyricText="currentLyricText"
-      :currentLyricChars="currentLyricChars"
-    />
   </div>
 </template>
 
@@ -413,5 +405,4 @@ onMounted(() => {
     }
   }
 }
-
 </style>
