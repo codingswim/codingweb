@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from "vue";
-import { useWeatherDashboardStore } from "@/stores/weatherDashboard";
+import { useWeatherDashboardStore } from "@/stores/weather";
 const store = useWeatherDashboardStore();
 const cityName = computed(() => store.cityName);
 const weatherNow = computed(() => store.weatherNow);

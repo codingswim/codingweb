@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getSevenDayWeather, getHourlyWeather, getWeatherNow } from '@/api/qweatherapi'
+import { getSevenDayWeather, getHourlyWeather, getWeatherNow } from '@/api/qweather'
 import { ref, watchEffect } from 'vue'
 
 // 👇 类型导入

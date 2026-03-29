@@ -7,7 +7,7 @@ import * as echarts from "echarts";
 import "echarts-gl";
 import { debounce, throttle } from "lodash-es";
 import { ref, onMounted, onUnmounted } from "vue";
-import { useWeatherDashboardStore } from "@/stores/weatherDashboard";
+import { useWeatherDashboardStore } from "@/stores/weather";
 import { zhengzhouAreaMap } from "@/types/area";
 
 // 常量配置

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
-import { useWeatherDashboardStore } from "@/stores/weatherDashboard";
+import { useWeatherDashboardStore } from "@/stores/weather";
 import type { ECharts } from "echarts";
 import * as echarts from "echarts";
 import ChartBox from "../ChartBox/index.vue";

@@ -3,7 +3,7 @@
 import { ref, onMounted } from "vue";
 
 // 导入和风天气获取天气指数详情的接口请求函数
-import { getWeatherIndexDetail } from "@/api/qweatherapi";
+import { getWeatherIndexDetail } from "@/api/qweather";
 
 // 导入自定义图表容器组件（带标题的公共卡片组件）
 import ChartBox from "../ChartBox/index.vue";

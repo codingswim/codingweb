@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import * as echarts from "echarts";
 import type { ECharts } from "echarts";
 import ChartBox from "../ChartBox/index.vue";
-import { useWeatherDashboardStore } from "@/stores/weatherDashboard";
+import { useWeatherDashboardStore } from "@/stores/weather";
 
 const store = useWeatherDashboardStore();
 const next7DaysWeather = computed(() => store.next7DaysWeather);
