@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import checker from 'vite-plugin-checker'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
@@ -21,7 +22,12 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()],
       // 生成组件声明文件
       dts: 'src/components.d.ts'
-    })
+    }),
+
+    checker({ // 开启类型检查
+      typescript: true,
+      vueTsc: true,
+    }),
   ],
   // 路径别名（可选，简化导入路径）
   resolve: {
