@@ -19,7 +19,7 @@ import { RouterLink } from "vue-router";
 </template>
 <style>
 .top-nav {
-  height: 90px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,7 +56,7 @@ import { RouterLink } from "vue-router";
 .nav-links {
   float: left;
   margin-left: 40px;
-  line-height: 90px;
+  line-height: 70px;
   color: #ccc;
 
   .nav-link {

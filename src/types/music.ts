@@ -77,3 +77,11 @@ export interface LyricChar {
     char: string;
     index: number;
 }
+
+/**
+ * 歌词行类型
+*/
+export interface LyricLine {
+    time: number;
+    text: string;
+}

@@ -1,45 +1,55 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed, nextTick } from "vue";
 import Header from "./components/Header.vue";
 import { getLiRongHaoSongs, getLyric, getSongUrl } from "@/api/music";
-import type { MusicItem, LyricChar } from "@/types/music";
+import type { MusicItem, LyricChar, LyricLine } from "@/types/music";
 import { parseLrc, splitLyricIntoChars, formatTime } from "@/utils/lyric";
 import Title from "./components/Title.vue";
 import MusicList from "./components/MusicList.vue";
 import LyricAnimate from "./components/LyricAnimate.vue";
 import PlayerControls from "./components/PlayerControls.vue";
 
+// 常量抽离 便于维护
+const API_SUCCESS_CODE = 200;
+const SONG_PLAYABLE_ST = 0;
+
+// ====================== 歌曲数据 ======================
 const musicList = ref<MusicItem[]>([]);
 const currentSong = ref<MusicItem | null>(null);
 
-// 播放相关
+// ====================== 播放相关 自动类型推导精简 ======================
 const audioRef = ref<HTMLAudioElement | null>(null);
-const audioUrl = ref<string>("");
-const currentTime = ref<number>(0);
-const duration = ref<number>(0);
-const isPlaying = ref<boolean>(false);
+const audioUrl = ref("");
+const currentTime = ref(0);
+const duration = ref(0);
+const isPlaying = ref(false);
 
-// 歌词相关
-const lyricLines = ref<{ time: number; text: string }[]>([]);
-const currentLyricText = ref<string>("");
+// 进度条 计算属性 优化模板
+const progressWidth = computed(() => {
+  if (!duration.value) return "0%";
+  return `${(currentTime.value / duration.value) * 100}%`;
+});
+
+// ====================== 歌词相关 ======================
+const lyricLines = ref<LyricLine[]>([]);
+const currentLyricText = ref("");
 const currentLyricChars = ref<LyricChar[]>([]);
 
+// ====================== 请求锁 防止快速切歌并发错乱 ======================
+let isSwitching = false;
+
 // 获取歌词
-const fetchLyric = async (songId: number) => {
+const fetchLyric = async (songId?: number) => {
   if (!songId) return;
   try {
     const { data } = await getLyric(songId);
-    if (data.code === 200 && data.lrc?.lyric) {
-      lyricLines.value = parseLrc(data.lrc.lyric);
-    } else {
-      lyricLines.value = [];
-    }
-    currentLyricText.value = "";
-  } catch (error) {
-    console.error(error);
+    lyricLines.value =
+      data.code === API_SUCCESS_CODE && data.lrc?.lyric ? parseLrc(data.lrc.lyric) : [];
+  } catch (err) {
+    console.error("获取歌词失败：", err);
     lyricLines.value = [];
-    currentLyricText.value = "";
   }
+  currentLyricText.value = "";
 };
 
 // 更新当前歌词
@@ -48,96 +58,81 @@ const updateCurrentLyric = () => {
     currentLyricText.value = "";
     return;
   }
-  let matchedLyric = "";
   for (let i = lyricLines.value.length - 1; i >= 0; i--) {
     if (lyricLines.value[i].time <= currentTime.value) {
-      matchedLyric = lyricLines.value[i].text;
-      break;
+      currentLyricText.value = lyricLines.value[i].text;
+      return;
     }
   }
-  currentLyricText.value = matchedLyric;
+  currentLyricText.value = "";
 };
 
-// 歌词变化时拆字
-watch(currentLyricText, (newText) => {
-  currentLyricChars.value = splitLyricIntoChars(newText);
-});
-
-// 监听播放时间
-watch(currentTime, () => {
-  updateCurrentLyric();
-});
-
-// 切换歌曲
-watch(currentSong, (newSong) => {
-  if (newSong) {
-    fetchSongUrl(newSong.id);
-    fetchLyric(newSong.id);
-    if (audioRef.value) {
-      audioRef.value.currentTime = 0;
-      currentTime.value = 0;
-    }
-    isPlaying.value = false;
-  }
-});
-
-// ---------- 播放逻辑 ----------
+// ====================== 歌曲接口 ======================
 const fetchMusicList = async () => {
   try {
-    const allRes = await getLiRongHaoSongs();
-    if (allRes.data.code !== 200 || !allRes.data.songs) return;
-    const playableSongs = allRes.data.songs.filter(
-      (item: MusicItem) => item.privilege?.st === 0
+    const { data } = await getLiRongHaoSongs();
+    if (data.code !== API_SUCCESS_CODE || !data.songs) return;
+    musicList.value = data.songs.filter(
+      (item) => item.privilege?.st === SONG_PLAYABLE_ST
     );
-    musicList.value = playableSongs;
     if (musicList.value.length) currentSong.value = musicList.value[0];
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error("获取歌单失败：", err);
   }
 };
 
-const fetchSongUrl = async (songId: number) => {
+const fetchSongUrl = async (songId?: number) => {
   if (!songId) return;
   try {
     const { data } = await getSongUrl(songId);
-    if (data.code === 200 && data.data.length) {
+    if (data.code === API_SUCCESS_CODE && data.data.length) {
       audioUrl.value = data.data[0].url || "";
+      // 切换歌曲后自动播放
+      await nextTick();
+      if (audioRef.value) {
+        await audioRef.value.play();
+        isPlaying.value = true;
+      }
     }
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error("获取播放地址失败：", err);
   }
 };
 
+// ====================== 音频事件 ======================
 const handleLoadedMetadata = () => {
-  const audio = audioRef.value;
-  if (!audio) return;
-  duration.value = audio.duration || 0;
+  if (audioRef.value) duration.value = audioRef.value.duration || 0;
+};
+
+const handleTimeUpdate = () => {
+  if (audioRef.value) currentTime.value = audioRef.value.currentTime || 0;
+};
+
+// 播放结束自动下一首
+const handleAudioEnded = () => {
+  isPlaying.value = false;
+  handleNext();
 };
 
 const handleProgressClick = (event: MouseEvent) => {
   const bar = event.currentTarget as HTMLElement;
+  const audio = audioRef.value;
+  if (!audio || !duration.value) return;
+
   const rect = bar.getBoundingClientRect();
   const ratio = (event.clientX - rect.left) / rect.width;
-  const audio = audioRef.value;
-  if (!audio) return;
   audio.currentTime = duration.value * ratio;
   currentTime.value = audio.currentTime;
 };
 
-const handleAudioEnded = () => {
-  isPlaying.value = false;
-};
-const handleTimeUpdate = () => {
-  const audio = audioRef.value;
-  if (!audio) return;
-  currentTime.value = audio.currentTime || 0;
-};
-
-const handleTogglePlay = () => {
+// ====================== 播放控制 ======================
+const handleTogglePlay = async () => {
   const audio = audioRef.value;
   if (!audio || !audioUrl.value) return;
+
   if (audio.paused) {
-    audio.play().then(() => (isPlaying.value = true));
+    await audio.play();
+    isPlaying.value = true;
   } else {
     audio.pause();
     isPlaying.value = false;
@@ -146,24 +141,52 @@ const handleTogglePlay = () => {
 
 const handlePrev = () => {
   if (!currentSong.value) return;
-  const idx = musicList.value.indexOf(currentSong.value);
-  if (idx > 0) {
-    currentSong.value = musicList.value[idx - 1];
-  }
+  const idx = musicList.value.findIndex((s) => s.id === currentSong.value!.id);
+  if (idx > 0) currentSong.value = musicList.value[idx - 1];
 };
 
 const handleNext = () => {
   if (!currentSong.value) return;
-  const idx = musicList.value.indexOf(currentSong.value);
-  if (idx < musicList.value.length - 1) currentSong.value = musicList.value[idx + 1];
+  const idx = musicList.value.findIndex((s) => s.id === currentSong.value!.id);
+  if (idx < musicList.value.length - 1) {
+    currentSong.value = musicList.value[idx + 1];
+  }
 };
 
-// ---------- 处理子组件触发的事件 ----------
-
-// 修改当前歌曲
+// 子组件选中歌曲
 const handleSelectSong = (song: MusicItem) => {
   currentSong.value = song;
 };
+
+// ====================== 侦听器优化 ======================
+// 歌词拆字
+watch(currentLyricText, (text) => {
+  currentLyricChars.value = splitLyricIntoChars(text);
+});
+
+// 高频timeupdate 简易节流优化
+let lyricTimer: number | null = null;
+watch(currentTime, () => {
+  if (lyricTimer) return;
+  lyricTimer = window.setTimeout(() => {
+    updateCurrentLyric();
+    lyricTimer = null;
+  }, 80);
+});
+
+// 切歌统一处理 + 防并发 + 停止旧音频
+watch(currentSong, async (song) => {
+  if (!song || isSwitching) return;
+  isSwitching = true;
+
+  if (audioRef.value) audioRef.value.pause();
+  isPlaying.value = false;
+  currentTime.value = 0;
+
+  await Promise.all([fetchSongUrl(song.id), fetchLyric(song.id)]);
+
+  isSwitching = false;
+});
 
 onMounted(() => {
   fetchMusicList();
@@ -172,32 +195,26 @@ onMounted(() => {
 
 <template>
   <div class="wrapper">
-    <!-- 头部导航 -->
     <Header />
-    <!-- 标题 -->
     <Title />
-    <!-- 音乐列表 父组件向子组件传递数据，子组件监听歌曲选择事件 -->
+
     <MusicList
-      :musicList="musicList"
-      :currentSong="currentSong"
-      @selectSong="handleSelectSong"
+      :music-list="musicList"
+      :current-song="currentSong"
+      @select-song="handleSelectSong"
     />
-    <!-- 纯文字波浪动画 -->
+
     <LyricAnimate
-      :currentLyricText="currentLyricText"
-      :currentLyricChars="currentLyricChars"
-      :isPlaying="isPlaying"
+      :current-lyric-text="currentLyricText"
+      :current-lyric-chars="currentLyricChars"
+      :is-playing="isPlaying"
     />
-    <!-- 播放控制条 -->
 
     <div class="player-controls" v-if="currentSong">
       <div class="progress-wrap">
         <span class="time-label">{{ formatTime(currentTime) }}</span>
         <div class="progress-bar" @click="handleProgressClick">
-          <div
-            class="progress-inner"
-            :style="{ width: duration ? `${(currentTime / duration) * 100}%` : 0 }"
-          ></div>
+          <div class="progress-inner" :style="{ width: progressWidth }"></div>
         </div>
         <span class="time-label">{{ formatTime(duration) }}</span>
       </div>
@@ -210,11 +227,11 @@ onMounted(() => {
         @loadedmetadata="handleLoadedMetadata"
         @timeupdate="handleTimeUpdate"
         @ended="handleAudioEnded"
-      ></audio>
+      />
 
       <PlayerControls
-        :currentSong="currentSong"
-        :isPlaying="isPlaying"
+        :current-song="currentSong"
+        :is-playing="isPlaying"
         @toggle-play="handleTogglePlay"
         @prev="handlePrev"
         @next="handleNext"
@@ -228,48 +245,54 @@ onMounted(() => {
   width: 100%;
   height: 100vh;
   background: url(@/assets/images/wyybg.png) no-repeat center / cover;
+  background-size: cover;
+  background-position: center;
+}
 
-  .player-controls {
-    width: 80%;
-    position: fixed;
-    bottom: 20px;
-    left: 0;
-    right: 0;
-    margin: auto;
-    padding: 16px 24px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
+.player-controls {
+  width: 80%;
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  padding: 16px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-  .audio-hidden {
-    display: none;
-  }
+.audio-hidden {
+  display: none;
+}
 
-  .progress-wrap {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.time-label {
+  font-size: 12px;
+  color: #c0c0c0;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+
+  &:hover {
+    transform: scaleY(1.6);
+    cursor: pointer;
   }
-  .time-label {
-    font-size: 12px;
-    color: #c0c0c0;
-  }
-  .progress-bar {
-    flex: 1;
-    height: 4px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.2);
-    overflow: hidden;
-    &:hover {
-      transform: scaleY(1.6);
-      cursor: pointer;
-    }
-  }
-  .progress-inner {
-    height: 100%;
-    background: linear-gradient(90deg, #ff4b2b, #ff416c);
-    border-radius: 999px;
-  }
+}
+
+.progress-inner {
+  height: 100%;
+  background: linear-gradient(90deg, #ff4b2b, #ff416c);
+  border-radius: 999px;
 }
 </style>
