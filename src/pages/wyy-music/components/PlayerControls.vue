@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { toRefs } from "vue";
-import type { MusicItem } from "@/types/music";
+import type { MusicItem } from "@/pages/wyy-music/types/music";
 import {
   StarFilled,
   ChatLineRound,

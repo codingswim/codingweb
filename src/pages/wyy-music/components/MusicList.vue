@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MusicItem } from "@/types/music";
+import type { MusicItem } from "@/pages/wyy-music/types/music";
 
 // 接收父组件传递的数据
 const props = withDefaults(

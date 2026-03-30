@@ -9,9 +9,16 @@ import { RouterLink } from "vue-router";
       </div>
 
       <nav class="nav-links">
-        <RouterLink to="/wyy-music" class="nav-link">发现音乐</RouterLink>
-        <RouterLink to="/" class="nav-link disabled">我的音乐</RouterLink>
+        <RouterLink to="/wyy-music/find" class="nav-link">发现音乐</RouterLink>
+        <RouterLink to="/wyy-music/lrh" class="nav-link">我的音乐</RouterLink>
         <RouterLink to="/" class="nav-link disabled">下载客户端</RouterLink>
+        <a
+          href="https://api-wyy-coding.vercel.app/docs/#/?id=neteasecloudmusicapienhanced"
+          target="_blank"
+          class="nav-link"
+        >
+          查看文档
+        </a>
       </nav>
     </div>
   </header>
@@ -19,6 +26,11 @@ import { RouterLink } from "vue-router";
 </template>
 <style>
 .top-nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+
   height: 70px;
   display: flex;
   align-items: center;
@@ -96,5 +108,9 @@ import { RouterLink } from "vue-router";
   height: 5px;
   border-bottom: none;
   background-color: #c20c0c;
+  position: absolute;
+  top: 70px;
+  left: 0;
+  width: 100%;
 }
 </style>

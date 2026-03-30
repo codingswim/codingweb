@@ -6,6 +6,8 @@ import home from '@/pages/home/index.vue'
 import weatherDashboard from '@/pages/weather-dashboard/index.vue'
 import whiteNoise from '@/pages/white-noise/index.vue'
 import wyyMusic from '@/pages/wyy-music/index.vue'
+import lrh from '@/pages/wyy-music/lrh.vue'
+import find from '@/pages/wyy-music/find.vue'
 import portal from '@/pages/portal/index.vue'
 
 // 3. 配置路由规则
@@ -48,7 +50,29 @@ const routes: RouteRecordRaw[] = [
             title: 'Music',
             requiresAuth: false,
             keepAlive: false
-        }
+        },
+        children: [
+            {
+                path: 'find',
+                name: 'FindMusic',
+                component: find,
+                meta: {
+                    title: '发现音乐',
+                    requiresAuth: false,
+                    keepAlive: false
+                }
+            },
+            {
+                path: 'lrh',
+                name: 'Lrh',
+                component: lrh,
+                meta: {
+                    title: 'RongHao Li Music',
+                    requiresAuth: false,
+                    keepAlive: false
+                }
+            }
+        ]
     },
     {
         path: '/portal',

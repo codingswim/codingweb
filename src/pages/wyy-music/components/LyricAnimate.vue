@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { LyricChar } from "@/types/music";
+import type { LyricChar } from "@/pages/wyy-music/types/music";
 
 const props = withDefaults(
   defineProps<{

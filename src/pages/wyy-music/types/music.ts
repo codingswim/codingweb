@@ -29,9 +29,20 @@ export interface MusicItem {
     }
 }
 
+// Pick 精简数据，保留必要字段，配合交叉类型，添加新字段类型
+export type SimpleMusicItem = Pick<MusicItem, "id" | "name"> & {
+    artistName: string;
+    albumName: string;
+}
+
 /*
  * 热门歌曲 API 响应类型
 */
+export interface HotSongsRequestParams {
+    artist: number;
+    limit: number;
+}
+
 export interface HotSongsApiResponse {
     code: number;
     songs: MusicItem[];

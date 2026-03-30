@@ -23,6 +23,8 @@ declare module 'vue' {
     ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
     ElSlider: typeof import('element-plus/es')['ElSlider']
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
+    ElTable: typeof import('element-plus/es')['ElTable']
+    ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     Header: typeof import('./components/Header/index.vue')['default']
     LangSwitch: typeof import('./components/Header/LangSwitch/index.vue')['default']
     PlaybackControls: typeof import('./pages/white-noise/WhiteNoise/PlaybackControls.vue')['default']
@@ -35,5 +37,8 @@ declare module 'vue' {
     Title: typeof import('./components/Header/Title/index.vue')['default']
     VisualizerCanvas: typeof import('./pages/white-noise/WhiteNoise/VisualizerCanvas.vue')['default']
     WebsiteList: typeof import('./components/WebsiteList/index.vue')['default']
+  }
+  export interface GlobalDirectives {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }
