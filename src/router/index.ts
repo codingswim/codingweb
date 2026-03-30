@@ -2,11 +2,11 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
 // 2. 引入你要跳转的页面
-import home from './pages/home/index.vue'
-import weatherDashboard from './pages/weather-dashboard/index.vue'
-import whiteNoise from './pages/white-noise/index.vue'
-import wyyMusic from './pages/wyy-music/index.vue'
-import portal from './pages/portal/index.vue'
+import home from '@/pages/home/index.vue'
+import weatherDashboard from '@/pages/weather-dashboard/index.vue'
+import whiteNoise from '@/pages/white-noise/index.vue'
+import wyyMusic from '@/pages/wyy-music/index.vue'
+import portal from '@/pages/portal/index.vue'
 
 // 3. 配置路由规则
 const routes: RouteRecordRaw[] = [
