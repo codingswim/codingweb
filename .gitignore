@@ -1,24 +1,60 @@
-# Logs
-logs
+# 系统
+.DS_Store
+Thumbs.db
 *.log
+
+# IDE / 编辑器
+.idea/
+.vscode/!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 构建产物
+dist/
+dist-ssr/
+*.local
+
+# 自动生成的类型文件（unplugin-auto-import）
+auto-imports.d.ts
+components.d.ts
+src/auto-imports.d.ts
+src/components.d.ts
+
+# TypeScript 缓存
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+tsconfig.node.tsbuildinfo
+
+# 环境变量
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 日志
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# 测试/覆盖率
+coverage/
+*.lcov
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# 打包分析
+stats.html
+stats.json
+
+# 临时文件
+*.tmp
+*.temp
+
+# 旧配置/无用文件
+vite.config.js
+vite.config.js.map

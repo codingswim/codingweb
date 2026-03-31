@@ -3,12 +3,6 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
 // 2. 引入你要跳转的页面
 import home from '@/pages/home/index.vue'
-import weatherDashboard from '@/pages/weather-dashboard/index.vue'
-import whiteNoise from '@/pages/white-noise/index.vue'
-import wyyMusic from '@/pages/wyy-music/index.vue'
-import lrh from '@/pages/wyy-music/lrh.vue'
-import find from '@/pages/wyy-music/find.vue'
-import portal from '@/pages/portal/index.vue'
 
 // 3. 配置路由规则
 const routes: RouteRecordRaw[] = [
@@ -25,7 +19,7 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/weather-dashboard',
         name: 'weatherDashboard',
-        component: weatherDashboard,
+        component: () => import('@/pages/weather-dashboard/index.vue'),
         meta: {
             title: '天气看板',
             requiresAuth: false,
@@ -35,7 +29,7 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/white-noise',
         name: 'whiteNoise',
-        component: whiteNoise,
+        component: () => import('@/pages/white-noise/index.vue'),
         meta: {
             title: '白噪音助眠',
             requiresAuth: false,
@@ -45,7 +39,7 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/wyy-music',
         name: 'wyyMusic',
-        component: wyyMusic,
+        component: () => import('@/pages/wyy-music/index.vue'),
         meta: {
             title: 'Music',
             requiresAuth: false,
@@ -55,7 +49,7 @@ const routes: RouteRecordRaw[] = [
             {
                 path: 'find',
                 name: 'FindMusic',
-                component: find,
+                component: () => import('@/pages/wyy-music/find.vue'),
                 meta: {
                     title: '发现音乐',
                     requiresAuth: false,
@@ -65,7 +59,7 @@ const routes: RouteRecordRaw[] = [
             {
                 path: 'lrh',
                 name: 'Lrh',
-                component: lrh,
+                component: () => import('@/pages/wyy-music/lrh.vue'),
                 meta: {
                     title: 'RongHao Li Music',
                     requiresAuth: false,
@@ -77,7 +71,7 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/portal',
         name: 'portal',
-        component: portal,
+        component: () => import('@/pages/portal/index.vue'),
         meta: {
             title: 'Portal',
             requiresAuth: false,

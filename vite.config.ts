@@ -1,53 +1,151 @@
+// Vite 核心
 import { defineConfig } from 'vite'
+import path from 'path'
+
+// 插件
 import vue from '@vitejs/plugin-vue'
+import progress from 'vite-plugin-progress'
 import checker from 'vite-plugin-checker'
+import viteImagemin from 'vite-plugin-imagemin'
+import { visualizer } from 'rollup-plugin-visualizer';
+
+// 自动导入
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-import path from 'path'
 
-// https://vitejs.dev/config/
+
+// 环境变量
+const isProduction = process.env.NODE_ENV === 'production'
+
+// 路径常量
+const aliasPath = {
+  '@': path.resolve(__dirname, 'src')
+}
+
 export default defineConfig({
   plugins: [
+    // 核心框架
     vue(),
-    // Element Plus 自动导入
+
+    // 开发体验插件（进度条）
+    progress(),
+
+    // 自动导入配置
     AutoImport({
       resolvers: [ElementPlusResolver()],
-      // 自动导入 Vue 相关 API（可选，简化代码）
-      imports: ['vue', 'pinia'],
-      // 生成类型声明文件（TS 友好）
+      imports: ['vue', 'vue-router', 'pinia'],
       dts: 'src/auto-imports.d.ts'
     }),
+    // 组件自动导入配置
     Components({
       resolvers: [ElementPlusResolver()],
-      // 生成组件声明文件
       dts: 'src/components.d.ts'
     }),
 
-    checker({ // 开启类型检查
-      typescript: true,
-      vueTsc: true,
+    // 类型检查（仅生产）
+    checker({
+      typescript: isProduction,
+      vueTsc: isProduction,
+      enableBuild: true,     // 仅在 build 时执行
+      overlay: false,        // 开发时不显示错误覆盖层
     }),
+
+    // 打包分析（仅生产）
+    ...(isProduction ? [
+      visualizer({
+        open: true,
+        gzipSize: true,
+        brotliSize: true,
+        filename: 'stats.html'
+      })
+    ] : []),
+
+    // 图片压缩（仅生产）
+    ...(isProduction ? [
+      viteImagemin({
+        gifsicle: { optimizationLevel: 7, interlaced: false },
+        optipng: { optimizationLevel: 7 },
+        mozjpeg: { quality: 80 },
+        pngquant: { quality: [0.6, 0.8] },
+        svgo: { plugins: [{ removeViewBox: false }] }
+      })
+    ] : [])
   ],
-  // 路径别名（可选，简化导入路径）
+
+  // 路径别名
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src')
-    }
+    alias: aliasPath
   },
-  // SCSS 全局变量配置（可选，比如全局样式/变量）
+
+  // CSS 配置
   css: {
+    devSourcemap: true,
     preprocessorOptions: {
       scss: {
-        // 全局引入 SCSS 变量文件（需先创建 src/styles/variables.scss）
         additionalData: '@use "@/styles/variables.scss" as *;'
       }
     }
   },
+
+  // 依赖预构建优化
+  optimizeDeps: {
+    include: ['vue', 'vue-router', 'pinia', 'element-plus'],
+    esbuildOptions: {
+      supported: {
+        'top-level-await': true
+      }
+    }
+  },
+
+  // 生产构建
+  build: {
+    sourcemap: false,
+    target: 'es2022',
+    cssCodeSplit: true,
+    assetsInlineLimit: 4096,
+
+    // 代码分隔
+    rollupOptions: {
+      output: {
+        // JS 输出规则
+        chunkFileNames: 'js/[name]-[hash].js',
+        entryFileNames: 'js/[name]-[hash].js',
+
+        // 静态资源分类打包
+        assetFileNames: (assetInfo) => {
+          const name = assetInfo.name || '';
+          if (!name) return 'assets/[name]-[hash].[ext]';
+          if (/\.(png|jpe?g|gif|svg|webp)$/i.test(name)) return 'images/[name]-[hash].[ext]';
+          if (/\.(woff2?|eot|ttf|otf)$/i.test(name)) return 'fonts/[name]-[hash].[ext]';
+          if (name.endsWith('.css')) return 'css/[name]-[hash].[ext]';
+          return 'assets/[name]-[hash].[ext]';
+        },
+
+        // 手动代码拆包
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('element-plus')) return 'vendor_ui'
+            if (id.includes('echarts')) return 'vendor_echarts'
+            if (id.includes('lodash')) return 'vendor-utils';
+            if (id.includes('vue') || id.includes('vue-router') || id.includes('pinia')) {
+              return 'vendor_vue'
+            }
+            return 'vendor'
+          }
+        },
+      },
+    }
+  },
+
+  // 开发服务器
   server: {
     port: 8080,
     open: true,
-    proxy: { // 配置代理
+    hmr: {
+      overlay: false,
+    },
+    proxy: {
       '/api': {
         target: 'https://api-wyy-coding.vercel.app',
         changeOrigin: true,
