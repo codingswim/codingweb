@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { getLiRongHaoSongs } from "@/api/music";
 import type { SimpleMusicItem } from "@/pages/wyy-music/types/music";
 import { toSimpleMusicItem } from "@/pages/wyy-music/converters";
@@ -23,7 +23,7 @@ const { list, loading, error, fetchList } = useMusicList<SimpleMusicItem>({
 
 watch(
   () => list.value,
-  (newList) => {
+  (newList: SimpleMusicItem[]) => {
     if (newList.length > 0) {
       currentMusic.value = newList[0];
     }

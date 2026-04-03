@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { toRefs } from "vue";
 import type { LyricChar } from "@/pages/wyy-music/types/music";
 
 const props = withDefaults(
