@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import ChartBox from "../ChartBox/index.vue";
 import socket from "@/utils/socket";
 import * as echarts from "echarts";
@@ -7,14 +7,16 @@ import * as echarts from "echarts";
 const num = ref(20);
 const isConnected = ref(false);
 const chartRef = ref<HTMLElement | null>(null);
+let myChart: echarts.ECharts | null = null;
 
 const initChart = () => {
   if (!chartRef.value) return;
 
-  let myChart = echarts.init(chartRef.value);
-  let option;
+  if (!myChart) {
+    myChart = echarts.init(chartRef.value);
+  }
 
-  option = {
+  const option = {
     series: [
       {
         type: "gauge",
@@ -138,16 +140,16 @@ watch(num, (newVal, oldVal) => {
 watch(isConnected, (newVal) => {
   if (newVal) {
     // 手动重连
-    if (socket.connected) {
-      console.log("✅ 已连接到服务器");
-    } else {
+    if (!socket.connected) {
       console.log("🔄 正在重连到服务器...");
       socket.connect();
     }
   } else {
     // 手动断开连接
-    console.log("⏹️ 正在断开与服务器的连接...");
-    socket.disconnect();
+    if (socket.connected) {
+      console.log("⏹️ 正在断开与服务器的连接...");
+      socket.disconnect();
+    }
   }
 });
 
@@ -175,6 +177,23 @@ onMounted(() => {
   isConnected.value = socket.connected;
 });
 
+onUnmounted(() => {
+  // 移除所有socket事件监听器
+  socket.off("connect");
+  socket.off("num");
+  socket.off("disconnect");
+
+  // 销毁ECharts实例
+  if (myChart) {
+    myChart.dispose();
+    myChart = null;
+  }
+
+  // 组件卸载时，断开与服务器的连接
+  if (socket.connected) {
+    socket.disconnect();
+  }
+});
 </script>
 
 <template>
