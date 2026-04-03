@@ -16,7 +16,9 @@
       <router-link class="header-nav-link" to="/white-noise">{{
         $t("whiteNoise.navTitle")
       }}</router-link>
-      <router-link class="header-nav-link" to="/chat">Chat</router-link>
+      <router-link class="header-nav-link" to="/chat">{{
+        $t("chat.navTitle")
+      }}</router-link>
       <ThemeSwitch />
       <LangSwitch />
     </div>

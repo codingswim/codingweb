@@ -4,6 +4,21 @@ export default {
     title: 'CODINGSWIM',
     beta: 'Beta',
   },
+
+  chat: {
+    navTitle: 'Chat',
+    status: 'Connection Status',
+    connected: 'Connected',
+    disconnected: 'Disconnected',
+    currentUser: 'Current User',
+    inputMessage: 'Input Message',
+    send: 'Send',
+    guest: 'Guest',
+    system: 'System',
+    joined: 'Joined Chat',
+    left: 'Left Chat Room',
+  },
+
   // 门户相关
   portal: {
     navTitle: 'Portal',

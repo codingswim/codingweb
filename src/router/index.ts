@@ -135,9 +135,9 @@ router.beforeEach((to, _from, next) => {
     next() // 继续路由导航
 })
 // 6. 路由守卫 - 全局后置守卫
-router.afterEach((to, from) => {
-    // 可以在这里添加页面访问统计、埋点等逻辑
-    console.log(`页面从 ${from.path} 跳转到 ${to.path}`)
-})
+// router.afterEach((to, from) => {
+// 可以在这里添加页面访问统计、埋点等逻辑
+// console.log(`页面从 ${from.path} 跳转到 ${to.path}`)
+// })
 // 7. 导出路由
 export default router

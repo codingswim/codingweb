@@ -5,6 +5,20 @@ export default {
     beta: '测试版本',
   },
 
+  chat: {
+    navTitle: '聊天室',
+    status: '连接状态',
+    connected: '已连接',
+    disconnected: '未连接',
+    currentUser: '当前用户',
+    inputMessage: '输入消息',
+    send: '发送',
+    guest: '游客',
+    system: '系统',
+    joined: '加入了聊天室',
+    left: '离开了聊天室',
+  },
+
   // 门户相关
   portal: {
     navTitle: '门户',
