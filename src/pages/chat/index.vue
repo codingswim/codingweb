@@ -26,7 +26,7 @@
           <span class="name">{{ item.username }}</span>
           <span class="time">{{ item.time }}</span>
         </div>
-        <div class="content">{{ item.content }}</div>
+        <div class="content">{{ item.displayContent }}</div>
       </div>
     </div>
 
@@ -48,7 +48,9 @@ interface ChatMessage {
   type: "user" | "system";
   username: string;
   content: string;
+  displayContent: string;
   time: string;
+  isStreaming: boolean;
 }
 
 // 消息列表类型
@@ -77,35 +79,49 @@ onMounted(() => {
         type: "user",
         username: data.username,
         content: data.content,
+        displayContent: "",
         time: data.time || new Date().toLocaleTimeString(),
+        isStreaming: true,
       };
-      msgList.value.push(newMessage);
+      const messageIndex = msgList.value.push(newMessage) - 1;
       scrollToBottom();
+      // 启动流式显示
+      streamMessageContent(messageIndex, data.content);
     }
   );
 
   // 用户加入事件
   socket.on("user joined", (username: string) => {
+    const content = `${username} ${t("chat.joined")}`;
     const systemMessage: ChatMessage = {
       type: "system",
       username: t("chat.system"),
-      content: `${username} ${t("chat.joined")}`,
+      content: content,
+      displayContent: "",
       time: new Date().toLocaleTimeString(),
+      isStreaming: true,
     };
-    msgList.value.push(systemMessage);
+    const messageIndex = msgList.value.push(systemMessage) - 1;
     scrollToBottom();
+    // 启动流式显示
+    streamMessageContent(messageIndex, content);
   });
 
   // 用户离开事件
   socket.on("user left", () => {
+    const content = `${t("chat.left")}`;
     const systemMessage: ChatMessage = {
       type: "system",
       username: t("chat.system"),
-      content: `${t("chat.left")}`,
+      content: content,
+      displayContent: "",
       time: new Date().toLocaleTimeString(),
+      isStreaming: true,
     };
-    msgList.value.push(systemMessage);
+    const messageIndex = msgList.value.push(systemMessage) - 1;
     scrollToBottom();
+    // 启动流式显示
+    streamMessageContent(messageIndex, content);
   });
 
   // 断开连接事件
@@ -135,6 +151,21 @@ const scrollToBottom = (): void => {
       msgBox.value.scrollTop = msgBox.value.scrollHeight;
     }
   });
+};
+
+// 流式显示消息内容
+const streamMessageContent = (messageIndex: number, content: string): void => {
+  let index = 0;
+  const interval = setInterval(() => {
+    if (index < content.length) {
+      msgList.value[messageIndex].displayContent = content.substring(0, index + 1);
+      index++;
+      scrollToBottom();
+    } else {
+      clearInterval(interval);
+      msgList.value[messageIndex].isStreaming = false;
+    }
+  }, 50); // 每 50 毫秒显示一个字符
 };
 
 // 清理事件监听
@@ -254,5 +285,9 @@ onUnmounted(() => {
     border-radius: 6px;
     cursor: pointer;
   }
+}
+
+h2 span:hover {
+  cursor: pointer;
 }
 </style>
