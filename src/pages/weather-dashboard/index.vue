@@ -4,12 +4,10 @@ import Title from "./Title.vue";
 import Map from "./map.vue";
 import Next7DaysWeather from "./components/Next7DaysWeather.vue";
 import Next7HoursWeather from "./components/Next7HoursWeather.vue";
-import Indices from "./components/Indices.vue";
+import Temperature from "./components/Temperature.vue";
 import Right1 from "./components/Right1.vue";
 import Right2 from "./components/Right2.vue";
 import Right3 from "./components/Right3.vue";
-
-const cityId = ref("101180109");
 
 let screen = ref();
 const getScale = (width = 1920, height = 1080) => {
@@ -24,7 +22,6 @@ onMounted(() => {
 window.onresize = () => {
   screen.value.style.transform = `scale(${getScale()}) translate(-50%,-50%)`;
 };
-
 </script>
 <template>
   <div class="container" ref="screen">
@@ -35,7 +32,7 @@ window.onresize = () => {
       <div class="left">
         <Next7HoursWeather />
         <Next7DaysWeather />
-        <Indices :city="cityId" />
+        <Temperature />
       </div>
 
       <!-- 中间 1 个图表 -->

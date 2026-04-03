@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
+import defaultFavicon from "@/assets/portal.svg";
+import { useRouter } from "vue-router";
+const router = useRouter();
+const handleClick = () => {
+  router.push("/");
+};
 </script>
 <template>
   <header class="top-nav">
@@ -23,6 +29,9 @@ import { RouterLink } from "vue-router";
     </div>
   </header>
   <div class="redbox"></div>
+  <div class="favicon">
+    <img :src="defaultFavicon" alt="" @click="handleClick" />
+  </div>
 </template>
 <style>
 .top-nav {
@@ -112,5 +121,22 @@ import { RouterLink } from "vue-router";
   top: 70px;
   left: 0;
   width: 100%;
+}
+
+.favicon {
+  width: 70px;
+  height: 70px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 30px;
+  padding: 15px;
+
+  img:hover {
+    cursor: pointer;
+  }
 }
 </style>

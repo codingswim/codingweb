@@ -40,6 +40,8 @@ const routes: RouteRecordRaw[] = [
         path: '/wyy-music',
         name: 'wyyMusic',
         component: () => import('@/pages/wyy-music/index.vue'),
+        // 默认访问发现音乐页面
+        redirect: '/wyy-music/find',
         meta: {
             title: 'Music',
             requiresAuth: false,
@@ -74,6 +76,16 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/pages/portal/index.vue'),
         meta: {
             title: 'Portal',
+            requiresAuth: false,
+            keepAlive: false
+        }
+    },
+    {
+        path: '/chat',
+        name: 'chat',
+        component: () => import('@/pages/chat/index.vue'),
+        meta: {
+            title: 'Chat',
             requiresAuth: false,
             keepAlive: false
         }

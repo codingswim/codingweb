@@ -5,6 +5,12 @@ import { ElLoading } from "element-plus";
 import { useWebsiteStore } from "@/stores/website";
 import SearchInput from "@/pages/portal/SearchInput/index.vue";
 import WebsiteList from "@/pages/portal/WebsiteList/index.vue";
+import defaultFavicon from "@/assets/portal.svg";
+import { useRouter } from "vue-router";
+const router = useRouter();
+const handleClick = () => {
+  router.push("/");
+};
 
 const websiteStore = useWebsiteStore();
 const { t, locale } = useI18n();
@@ -71,7 +77,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="portal">
     <h1>{{ greeting }}</h1>
     <p>{{ t("portal.lyric") }}</p>
     <SearchInput />
@@ -81,10 +87,17 @@ onUnmounted(() => {
       :bottom="120"
       :style="{ background: 'var(--primary-color)', color: '#fff' }"
     />
+
+    <div class="favicon">
+      <img :src="defaultFavicon" alt="" @click="handleClick" />
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
+.portal {
+  position: relative;
+}
 
 h1 {
   text-align: center;
@@ -100,5 +113,22 @@ p {
   margin: 20px auto 40px;
   font-size: clamp(12px, 5vw, 16px);
   width: 90%;
+}
+
+.favicon {
+  width: 70px;
+  height: 70px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 30px;
+  padding: 15px;
+
+  img:hover {
+    cursor: pointer;
+  }
 }
 </style>

@@ -2,13 +2,7 @@
   <div class="wn-page theme-ambient">
     <!-- 视频背景 -->
     <div class="video-background">
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        class="video-background__video"
-      >
+      <video autoPlay loop muted playsInline class="video-background__video">
         <source src="/sounds/rain.mp4" type="video/mp4" />
       </video>
     </div>
@@ -57,6 +51,9 @@
       </div>
     </div>
   </div>
+  <div class="favicon">
+    <img :src="defaultFavicon" alt="" @click="handleClick" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -76,7 +73,12 @@ import {
   type WhiteNoiseSoundId,
 } from '@/constants/whiteNoiseSounds'
 import { useWhiteNoiseAudio } from '@/composables/useWhiteNoiseAudio'
-
+import defaultFavicon from "@/assets/portal.svg";
+import { useRouter } from "vue-router";
+const router = useRouter();
+const handleClick = () => {
+  router.push("/");
+};
 const { t } = useI18n()
 
 const {
@@ -209,7 +211,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-
 .wn-page {
   height: 100vh;
   width: 100%;
@@ -242,9 +243,6 @@ onUnmounted(() => {
   position: relative;
 
   z-index: 1;
-  // background: rgba(255, 255, 255, 0.85);
-  // backdrop-filter: blur(10px);
-  // -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
   margin: 20px auto;
   padding: 20px;
@@ -380,6 +378,23 @@ onUnmounted(() => {
   .wn-page__title {
     font-size: 18px;
     padding-top: 12px;
+  }
+}
+
+.favicon {
+  width: 70px;
+  height: 70px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 30px;
+  padding: 15px;
+
+  img:hover {
+    cursor: pointer;
   }
 }
 </style>

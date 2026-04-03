@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useWeatherDashboardStore } from "@/stores/weather";
+import defaultFavicon from "@/assets/portal.svg";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const handleClick = () => {
+  router.push("/");
+};
+
 const store = useWeatherDashboardStore();
 const cityName = computed(() => store.cityName);
 const weatherNow = computed(() => store.weatherNow);
@@ -55,7 +63,7 @@ onUnmounted(() => {
     <div class="title-left">
       <span class="location"> 📍 {{ cityName }} </span>
       <span class="weather">
-        <i :class="`qi-${weatherNow.icon} weather-icon`" style="margin-right: 8px;"></i>
+        <i :class="`qi-${weatherNow.icon} weather-icon`" style="margin-right: 8px"></i>
         {{ weatherNow.text }} · {{ weatherNow.temp + "℃" }} · {{ weatherNow.windDir }}
         {{ weatherNow.windScale }}级
       </span>
@@ -68,13 +76,18 @@ onUnmounted(() => {
 
     <!-- 右侧：实时日期时间 -->
     <div class="title-right">
-      <div class="date">{{ dateTime.date }}</div>
-      <div class="time">{{ dateTime.time }}</div>
+      <div class="date-time">
+        <div class="date">{{ dateTime.date }}</div>
+        <div class="time">{{ dateTime.time }}</div>
+      </div>
+      <div class="favicon" @click="handleClick">
+        <img :src="defaultFavicon" alt="" />
+      </div>
     </div>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 /* 大屏标题根容器 - 浅色系渐变高端背景 */
 .screen-title {
   width: 100%;
@@ -144,20 +157,36 @@ onUnmounted(() => {
 /*  ========== 右侧：日期时间 ========== */
 .title-right {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  color: #3d5f82;
-}
+  gap: 26px;
+  align-items: center;
+  justify-content: center;
 
-.date {
-  font-size: 15px;
-  font-weight: 500;
-}
+  .favicon {
+    width: 40px;
+    height: 40px;
 
-.time {
-  font-size: 18px;
-  font-weight: 600;
-  color: #165dff;
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  .date-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    color: #3d5f82;
+
+    .date {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .time {
+      font-size: 18px;
+      font-weight: 600;
+      color: #165dff;
+    }
+  }
 }
 </style>
